@@ -23,7 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StatusCommand extends Command
 {
-    protected const string ARG_INCREMENT_ID = 'increment_id';
+    const string ARG_INCREMENT_ID = 'increment_id';
 
     /**
      * @param RMARepositoryInterface $rmaRepository
@@ -149,18 +149,13 @@ class StatusCommand extends Command
                 $orderItemSku = 'N/A';
             }
 
-            $conditionLabel = '-';
-            if ($item->getConditionId()) {
-                $conditionLabel = $this->getConditionLabel($item->getConditionId());
-            }
-
             $table->addRow([
                 $orderItemName,
                 $orderItemSku,
                 (string)$item->getQtyRequested(),
                 $item->getQtyApproved() !== null ? (string)$item->getQtyApproved() : '-',
                 $item->getQtyReturned() !== null ? (string)$item->getQtyReturned() : '-',
-                $conditionLabel,
+                $item->getConditionId() ? $this->getConditionLabel($item->getConditionId()) : '-',
             ]);
         }
 

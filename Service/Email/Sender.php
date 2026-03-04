@@ -131,6 +131,8 @@ class Sender implements SenderInterface
         string $recipientName,
         array $extraVars = []
     ): void {
+        $storeId = (int)$rma->getStoreId();
+
         try {
             $templateVars = array_merge($this->getBaseTemplateVars($rma), $extraVars);
 

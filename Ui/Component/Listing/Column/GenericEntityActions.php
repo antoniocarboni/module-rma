@@ -9,19 +9,25 @@ use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
 
-class ItemConditionActions extends Column
+class GenericEntityActions extends Column
 {
     /**
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param UrlInterface $urlBuilder
+     * @param string $editUrlPath
+     * @param string $deleteUrlPath
+     * @param string $entityLabel
      * @param array $components
      * @param array $data
      */
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
-        protected readonly UrlInterface $urlBuilder,
+        protected UrlInterface $urlBuilder,
+        protected string $editUrlPath = '',
+        protected string $deleteUrlPath = '',
+        protected string $entityLabel = '',
         array $components = [],
         array $data = []
     ) {
@@ -45,19 +51,19 @@ class ItemConditionActions extends Column
 
             $item[$this->getData('name')] = [
                 'edit' => [
-                    'href' => $this->urlBuilder->getUrl('rma/itemCondition/edit', [
+                    'href' => $this->urlBuilder->getUrl($this->editUrlPath, [
                         'entity_id' => $item['entity_id'],
                     ]),
                     'label' => __('Edit'),
                 ],
                 'delete' => [
-                    'href' => $this->urlBuilder->getUrl('rma/itemCondition/delete', [
+                    'href' => $this->urlBuilder->getUrl($this->deleteUrlPath, [
                         'entity_id' => $item['entity_id'],
                     ]),
                     'label' => __('Delete'),
                     'confirm' => [
-                        'title' => __('Delete item condition'),
-                        'message' => __('Are you sure you want to delete this item condition?'),
+                        'title' => __('Delete %1', $this->entityLabel),
+                        'message' => __('Are you sure you want to delete this %1?', $this->entityLabel),
                     ],
                     'post' => true,
                 ],

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MageOS\RMA\Block\Adminhtml\Rma\Edit;
 
-use MageOS\RMA\Api\Data\ItemInterface;
 use MageOS\RMA\Api\ItemConditionRepositoryInterface;
 use MageOS\RMA\Api\RMARepositoryInterface;
 use MageOS\RMA\Model\ResourceModel\Item\CollectionFactory as ItemCollectionFactory;

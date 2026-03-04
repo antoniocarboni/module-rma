@@ -24,10 +24,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListCommand extends Command
 {
-    protected const string OPTION_STATUS = 'status';
-    protected const string OPTION_FROM = 'from';
-    protected const string OPTION_TO = 'to';
-    protected const string OPTION_STORE = 'store';
+    const string OPTION_STATUS = 'status';
+    const string OPTION_FROM = 'from';
+    const string OPTION_TO = 'to';
+    const string OPTION_STORE = 'store';
 
     /**
      * @param RMARepositoryInterface $rmaRepository

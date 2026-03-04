@@ -6,18 +6,18 @@ namespace MageOS\RMA\Api\Data;
 
 interface RMAInterface
 {
-    public const string ENTITY_ID = 'entity_id';
-    public const string INCREMENT_ID = 'increment_id';
-    public const string ORDER_ID = 'order_id';
-    public const string CUSTOMER_ID = 'customer_id';
-    public const string STORE_ID = 'store_id';
-    public const string CUSTOMER_EMAIL = 'customer_email';
-    public const string CUSTOMER_NAME = 'customer_name';
-    public const string STATUS_ID = 'status_id';
-    public const string REASON_ID = 'reason_id';
-    public const string RESOLUTION_TYPE_ID = 'resolution_type_id';
-    public const string CREATED_AT = 'created_at';
-    public const string UPDATED_AT = 'updated_at';
+    const string ENTITY_ID = 'entity_id';
+    const string INCREMENT_ID = 'increment_id';
+    const string ORDER_ID = 'order_id';
+    const string CUSTOMER_ID = 'customer_id';
+    const string STORE_ID = 'store_id';
+    const string CUSTOMER_EMAIL = 'customer_email';
+    const string CUSTOMER_NAME = 'customer_name';
+    const string STATUS_ID = 'status_id';
+    const string REASON_ID = 'reason_id';
+    const string RESOLUTION_TYPE_ID = 'resolution_type_id';
+    const string CREATED_AT = 'created_at';
+    const string UPDATED_AT = 'updated_at';
 
     /**
      * @return int|null

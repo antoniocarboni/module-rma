@@ -95,6 +95,29 @@
     <preference for="MageOS\RMA\Api\RmaCommentManagementInterface" type="MageOS\RMA\Model\RmaCommentManagement"/>
     <preference for="MageOS\RMA\Api\RmaItemManagementInterface" type="MageOS\RMA\Model\RmaItemManagement"/>
 
+    <!-- Listing Actions Virtual Types -->
+    <virtualType name="MageOS\RMA\Ui\Component\Listing\Column\ReasonActions" type="MageOS\RMA\Ui\Component\Listing\Column\GenericEntityActions">
+        <arguments>
+            <argument name="editUrlPath" xsi:type="string">rma/reason/edit</argument>
+            <argument name="deleteUrlPath" xsi:type="string">rma/reason/delete</argument>
+            <argument name="entityLabel" xsi:type="string">reason</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOS\RMA\Ui\Component\Listing\Column\ResolutionTypeActions" type="MageOS\RMA\Ui\Component\Listing\Column\GenericEntityActions">
+        <arguments>
+            <argument name="editUrlPath" xsi:type="string">rma/resolutionType/edit</argument>
+            <argument name="deleteUrlPath" xsi:type="string">rma/resolutionType/delete</argument>
+            <argument name="entityLabel" xsi:type="string">resolution type</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="MageOS\RMA\Ui\Component\Listing\Column\ItemConditionActions" type="MageOS\RMA\Ui\Component\Listing\Column\GenericEntityActions">
+        <arguments>
+            <argument name="editUrlPath" xsi:type="string">rma/itemCondition/edit</argument>
+            <argument name="deleteUrlPath" xsi:type="string">rma/itemCondition/delete</argument>
+            <argument name="entityLabel" xsi:type="string">item condition</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Form Button Virtual Types: Back -->
     <virtualType name="MageOS\RMA\Block\Adminhtml\Rma\Edit\BackButton" type="MageOS\RMA\Block\Adminhtml\GenericBackButton"/>
     <virtualType name="MageOS\RMA\Block\Adminhtml\Status\Edit\BackButton" type="MageOS\RMA\Block\Adminhtml\GenericBackButton"/>

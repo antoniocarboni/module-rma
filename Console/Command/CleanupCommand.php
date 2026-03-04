@@ -21,9 +21,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CleanupCommand extends Command
 {
-    protected const string OPTION_DAYS = 'days';
-    protected const string OPTION_DRY_RUN = 'dry-run';
-    protected const array CLOSED_STATUSES = [
+    const string OPTION_DAYS = 'days';
+    const string OPTION_DRY_RUN = 'dry-run';
+    const array CLOSED_STATUSES = [
         StatusCodes::RESOLVED,
         StatusCodes::REJECTED,
         StatusCodes::CANCELED_BY_CUSTOMER,
@@ -194,12 +194,6 @@ class CleanupCommand extends Command
         $collection = $this->statusCollectionFactory->create();
         $collection->addFieldToFilter(StatusInterface::CODE, ['in' => self::CLOSED_STATUSES]);
 
-        $ids = [];
-
-        foreach ($collection as $status) {
-            $ids[] = (int)$status->getEntityId();
-        }
-
-        return $ids;
+        return array_map(fn($status) => (int)$status->getEntityId(), $collection->getItems());
     }
 }

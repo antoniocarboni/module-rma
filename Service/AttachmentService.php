@@ -19,8 +19,8 @@ use Psr\Log\LoggerInterface;
 
 class AttachmentService
 {
-    protected const string BASE_TMP_PATH = 'rma/tmp';
-    protected const string BASE_PATH = 'rma/attachments';
+    const string BASE_TMP_PATH = 'rma/tmp';
+    const string BASE_PATH = 'rma/attachments';
 
     protected WriteInterface $varDirectory;
 

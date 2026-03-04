@@ -7,7 +7,6 @@ namespace MageOS\RMA\Model;
 use MageOS\RMA\Api\RMARepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SearchCriteriaInterface;
-use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 abstract class AbstractRmaManagement
