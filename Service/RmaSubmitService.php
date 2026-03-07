@@ -89,6 +89,10 @@ class RmaSubmitService
         array $selectedItems,
         string $attachmentsJson = ''
     ): RMAInterface {
+        if (!$reasonId || !$resolutionTypeId) {
+            throw new LocalizedException(__('Invalid request.'));
+        }
+
         $storeId = (int)$order->getStoreId();
 
         $statusCode = $this->moduleConfig->isAutoApproveEnabled($storeId)

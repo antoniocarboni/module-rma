@@ -16,8 +16,9 @@ use Magento\Backend\Model\Auth\Session as AuthSession;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Exception;
 
 class Save extends BaseController implements HttpPostActionInterface
 {
@@ -62,16 +63,23 @@ class Save extends BaseController implements HttpPostActionInterface
 
         try {
             $comment = $this->createComment($rmaId, $commentText, $isVisible);
-            $attachmentsJson = (string)$this->getRequest()->getParam('attachments', '');
-            $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
-        } catch (Exception) {
+        } catch (CouldNotSaveException) {
             return $result->setData(['success' => false, 'message' => (string)__('Could not save comment.')]);
         }
 
-        return $result->setData([
+        $responseData = [
             'success' => true,
             'comment' => $this->commentFormatter->toArray($comment, true),
-        ]);
+        ];
+
+        try {
+            $attachmentsJson = (string)$this->getRequest()->getParam('attachments', '');
+            $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
+        } catch (LocalizedException $e) {
+            $responseData['attachment_error'] = $e->getMessage();
+        }
+
+        return $result->setData($responseData);
     }
 
     /**
@@ -100,7 +108,7 @@ class Save extends BaseController implements HttpPostActionInterface
      * @param string $commentText
      * @param bool $isVisible
      * @return CommentInterface
-     * @throws Exception
+     * @throws CouldNotSaveException
      */
     protected function createComment(int $rmaId, string $commentText, bool $isVisible): CommentInterface
     {

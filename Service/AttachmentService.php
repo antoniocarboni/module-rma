@@ -10,17 +10,22 @@ use MageOS\RMA\Api\Data\AttachmentInterfaceFactory;
 use MageOS\RMA\Helper\ModuleConfig;
 use MageOS\RMA\Model\ResourceModel\Attachment\CollectionFactory as AttachmentCollectionFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\App\Response\Http\FileFactory;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\File\Mime;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Directory\WriteInterface;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\MediaStorage\Model\File\UploaderFactory;
-use Psr\Log\LoggerInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class AttachmentService
 {
     const string BASE_TMP_PATH = 'rma/tmp';
     const string BASE_PATH = 'rma/attachments';
+    const int BYTES_PER_KB = 1024;
+    const int BYTES_PER_MB = 1024 * 1024;
 
     protected WriteInterface $varDirectory;
 
@@ -32,7 +37,7 @@ class AttachmentService
      * @param AttachmentRepositoryInterface $attachmentRepository
      * @param AttachmentCollectionFactory $attachmentCollectionFactory
      * @param Mime $mime
-     * @param LoggerInterface $logger
+     * @param JsonSerializer $jsonSerializer
      */
     public function __construct(
         Filesystem $filesystem,
@@ -42,7 +47,7 @@ class AttachmentService
         protected readonly AttachmentRepositoryInterface $attachmentRepository,
         protected readonly AttachmentCollectionFactory $attachmentCollectionFactory,
         protected readonly Mime $mime,
-        protected readonly LoggerInterface $logger
+        protected readonly JsonSerializer $jsonSerializer
     ) {
         $this->varDirectory = $filesystem->getDirectoryWrite(DirectoryList::VAR_DIR);
     }
@@ -54,6 +59,14 @@ class AttachmentService
      */
     public function uploadToTmp(string $fileId): array
     {
+        $maxBytes = $this->moduleConfig->getMaxAttachmentFileSizeBytes();
+
+        if (isset($_FILES[$fileId]['size']) && $_FILES[$fileId]['size'] > $maxBytes) {
+            throw new LocalizedException(
+                __('File exceeds the maximum allowed size of %1 MB.', $this->moduleConfig->getMaxAttachmentFileSize())
+            );
+        }
+
         $uploader = $this->uploaderFactory->create(['fileId' => $fileId]);
         $uploader->setAllowedExtensions($this->moduleConfig->getAllowedAttachmentExtensions());
         $uploader->setAllowRenameFiles(true);
@@ -66,14 +79,11 @@ class AttachmentService
             throw new LocalizedException(__('File cannot be saved to the temporary folder.'));
         }
 
-        $fileSize = (int)($result['size'] ?? 0);
-        $maxBytes = $this->moduleConfig->getMaxAttachmentFileSizeBytes();
+        $fullPath = $tmpPath . '/' . $result['file'];
+        $fileSize = (int)filesize($fullPath);
 
         if ($fileSize > $maxBytes) {
-            $fullPath = $tmpPath . '/' . $result['file'];
-            if (file_exists($fullPath)) {
-                unlink($fullPath);
-            }
+            $this->varDirectory->delete(self::BASE_TMP_PATH . '/' . $result['file']);
             throw new LocalizedException(
                 __('File exceeds the maximum allowed size of %1 MB.', $this->moduleConfig->getMaxAttachmentFileSize())
             );
@@ -101,7 +111,7 @@ class AttachmentService
         $saved = [];
 
         foreach (array_slice($tmpFiles, 0, $maxFiles) as $tmpFile) {
-            $fileName = $tmpFile['file'] ?? '';
+            $fileName = basename($tmpFile['file'] ?? '');
             if ($fileName === '') {
                 continue;
             }
@@ -164,10 +174,18 @@ class AttachmentService
     /**
      * @param AttachmentInterface $attachment
      * @return string
+     * @throws LocalizedException
      */
     public function getAbsolutePath(AttachmentInterface $attachment): string
     {
-        return $this->varDirectory->getAbsolutePath($attachment->getFilePath());
+        $resolved = $this->varDirectory->getAbsolutePath($attachment->getFilePath());
+        $basePath = $this->varDirectory->getAbsolutePath(self::BASE_PATH);
+
+        if (!str_starts_with($resolved, $basePath)) {
+            throw new LocalizedException(__('Invalid attachment path.'));
+        }
+
+        return $resolved;
     }
 
     /**
@@ -199,7 +217,7 @@ class AttachmentService
             return;
         }
 
-        $tmpFiles = json_decode($json, true);
+        $tmpFiles = $this->jsonSerializer->unserialize($json);
         if (!is_array($tmpFiles) || empty($tmpFiles)) {
             return;
         }
@@ -208,20 +226,45 @@ class AttachmentService
     }
 
     /**
+     * @param AttachmentInterface $attachment
+     * @param FileFactory $fileFactory
+     * @return ResponseInterface
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function createDownloadResponse(
+        AttachmentInterface $attachment,
+        FileFactory $fileFactory
+    ): ResponseInterface {
+        $filePath = $this->getAbsolutePath($attachment);
+
+        if (!file_exists($filePath)) {
+            throw new NoSuchEntityException(__('File not found.'));
+        }
+
+        return $fileFactory->create(
+            $attachment->getFileName(),
+            ['type' => 'filename', 'value' => $filePath],
+            DirectoryList::VAR_DIR,
+            $attachment->getMimeType()
+        );
+    }
+
+    /**
      * @param int $bytes
      * @return string
      */
     public function formatFileSize(int $bytes): string
     {
-        if ($bytes < 1024) {
+        if ($bytes < self::BYTES_PER_KB) {
             return $bytes . ' B';
         }
 
-        if ($bytes < 1048576) {
-            return round($bytes / 1024, 1) . ' KB';
+        if ($bytes < self::BYTES_PER_MB) {
+            return round($bytes / self::BYTES_PER_KB, 1) . ' KB';
         }
 
-        return round($bytes / 1048576, 1) . ' MB';
+        return round($bytes / self::BYTES_PER_MB, 1) . ' MB';
     }
 
     /**

@@ -42,15 +42,13 @@ abstract class AbstractRmaManagement
         $this->searchCriteriaBuilder->addFilter('rma_id', $rmaId);
 
         foreach ($searchCriteria->getFilterGroups() as $filterGroup) {
-            foreach ($filterGroup->getFilters() as $filter) {
-                if ($filter->getField() === 'rma_id') {
-                    continue;
-                }
-                $this->searchCriteriaBuilder->addFilter(
-                    $filter->getField(),
-                    $filter->getValue(),
-                    $filter->getConditionType() ?: 'eq'
-                );
+            $filters = array_filter(
+                $filterGroup->getFilters() ?? [],
+                fn($filter) => $filter->getField() !== 'rma_id'
+            );
+
+            if (!empty($filters)) {
+                $this->searchCriteriaBuilder->addFilters($filters);
             }
         }
 

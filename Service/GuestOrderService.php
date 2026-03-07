@@ -6,12 +6,13 @@ namespace MageOS\RMA\Service;
 
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\InputException;
 use Magento\Framework\Registry;
-use Magento\Framework\Stdlib\Cookie\CookieSizeLimitReachedException;
-use Magento\Framework\Stdlib\Cookie\FailureToSendException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Helper\Guest as GuestHelper;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Stdlib\Cookie\CookieSizeLimitReachedException;
+use Magento\Framework\Stdlib\Cookie\FailureToSendException;
 
 class GuestOrderService
 {
@@ -31,6 +32,7 @@ class GuestOrderService
      * @throws CookieSizeLimitReachedException
      * @throws FailureToSendException
      * @throws InputException
+     * @throws LocalizedException
      */
     public function loadValidOrder(RequestInterface $request): OrderInterface|ResultInterface
     {
@@ -40,7 +42,12 @@ class GuestOrderService
             return $result;
         }
 
-        // GuestHelper registers the order in Registry on success
-        return $this->registry->registry('current_order');
+        $order = $this->registry->registry('current_order');
+
+        if (!$order instanceof OrderInterface) {
+            throw new LocalizedException(__('Invalid guest order session.'));
+        }
+
+        return $order;
     }
 }

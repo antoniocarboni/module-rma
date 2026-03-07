@@ -15,8 +15,9 @@ use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Exception;
 
 class Save implements HttpPostActionInterface
 {
@@ -68,16 +69,23 @@ class Save implements HttpPostActionInterface
 
         try {
             $comment = $this->createComment($rmaId, $commentText);
-            $attachmentsJson = (string)$this->request->getParam('attachments', '');
-            $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
-        } catch (Exception) {
+        } catch (CouldNotSaveException) {
             return $result->setData(['success' => false, 'message' => (string)__('Could not save comment.')]);
         }
 
-        return $result->setData([
+        $responseData = [
             'success' => true,
             'comment' => $this->commentFormatter->toArray($comment, true),
-        ]);
+        ];
+
+        try {
+            $attachmentsJson = (string)$this->request->getParam('attachments', '');
+            $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
+        } catch (LocalizedException $e) {
+            $responseData['attachment_error'] = $e->getMessage();
+        }
+
+        return $result->setData($responseData);
     }
 
     /**
@@ -119,7 +127,7 @@ class Save implements HttpPostActionInterface
      * @param int $rmaId
      * @param string $commentText
      * @return CommentInterface
-     * @throws Exception
+     * @throws CouldNotSaveException
      */
     protected function createComment(int $rmaId, string $commentText): CommentInterface
     {

@@ -4,24 +4,12 @@ declare(strict_types=1);
 
 namespace MageOS\RMA\Helper;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
-class ModuleConfig extends AbstractHelper
+class ModuleConfig
 {
-    /**
-     * @param Context $context
-     * @param StoreManagerInterface $storeManager
-     */
-    public function __construct(
-        Context $context,
-        protected readonly StoreManagerInterface $storeManager
-    ) {
-        parent::__construct($context);
-    }
-
     const string SECTION = 'rma/';
 
     const string GROUP_GENERAL = self::SECTION . 'general/';
@@ -47,6 +35,16 @@ class ModuleConfig extends AbstractHelper
     const string XML_PATH_MAX_FILES = self::GROUP_ATTACHMENTS . 'max_files';
 
     /**
+     * @param ScopeConfigInterface $scopeConfig
+     * @param StoreManagerInterface $storeManager
+     */
+    public function __construct(
+        protected readonly ScopeConfigInterface $scopeConfig,
+        protected readonly StoreManagerInterface $storeManager
+    ) {
+    }
+
+    /**
      * @param int $storeId
      * @return bool
      */
@@ -64,15 +62,13 @@ class ModuleConfig extends AbstractHelper
      */
     public function getEnabledStoreIds(): array
     {
-        $storeIds = [];
-
-        foreach ($this->storeManager->getStores() as $store) {
-            if ($this->isEnabled((int)$store->getId())) {
-                $storeIds[] = (int)$store->getId();
-            }
-        }
-
-        return $storeIds;
+        return array_map(
+            fn($store) => (int)$store->getId(),
+            array_filter(
+                $this->storeManager->getStores(),
+                fn($store) => $this->isEnabled((int)$store->getId())
+            )
+        );
     }
 
     /**

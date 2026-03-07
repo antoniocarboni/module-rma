@@ -42,29 +42,20 @@ class OrderEligibility
     {
         $storeId = (int)$order->getStoreId();
 
-        // 1. Module enabled for this store's website
         if (!$this->moduleConfig->isEnabled($storeId)) {
             return false;
         }
 
-        // 2. Order status is allowed
         $allowedStatuses = $this->moduleConfig->getAllowedOrderStatuses($storeId);
         if (!in_array($order->getStatus(), $allowedStatuses, true)) {
             return false;
         }
 
-        // 3. Within return period
         if (!$this->isWithinReturnPeriod($order)) {
             return false;
         }
 
-        // 4. Has at least one item with available qty
-        $eligibleItems = $this->getEligibleItems($order);
-        if (empty($eligibleItems)) {
-            return false;
-        }
-
-        return true;
+        return !empty($this->getEligibleItems($order));
     }
 
     /**
@@ -78,12 +69,10 @@ class OrderEligibility
 
         $items = [];
         foreach ($order->getItems() as $orderItem) {
-            // Skip parent items of configurable/bundle products
             if ($orderItem->getParentItemId()) {
                 continue;
             }
 
-            // Skip virtual and downloadable products
             $productType = $orderItem->getProductType();
             if (in_array($productType, ['virtual', 'downloadable'], true)) {
                 continue;
@@ -161,20 +150,20 @@ class OrderEligibility
 
     /**
      * @param int $storeId
-     * @return array|int[]
+     * @return int[]
      * @throws NoSuchEntityException
      */
     protected function getStoreIdsForWebsite(int $storeId): array
     {
         $store = $this->storeManager->getStore($storeId);
         $websiteId = (int)$store->getWebsiteId();
-        $storeIds = [];
-
-        foreach ($this->storeManager->getStores() as $s) {
-            if ((int)$s->getWebsiteId() === $websiteId) {
-                $storeIds[] = (int)$s->getId();
-            }
-        }
+        $storeIds = array_map(
+            fn($s) => (int)$s->getId(),
+            array_filter(
+                $this->storeManager->getStores(),
+                fn($s) => (int)$s->getWebsiteId() === $websiteId
+            )
+        );
 
         return $storeIds ?: [$storeId];
     }

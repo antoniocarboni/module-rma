@@ -11,10 +11,9 @@ use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\Cookie\CookieSizeLimitReachedException;
 use Magento\Framework\Stdlib\Cookie\FailureToSendException;
 use Exception;
@@ -55,7 +54,6 @@ class Save implements HttpPostActionInterface
             return $orderResult;
         }
 
-        /** @var OrderInterface $order */
         $order = $orderResult;
 
         if (!$this->orderEligibility->isOrderEligible($order)) {
@@ -65,7 +63,6 @@ class Save implements HttpPostActionInterface
 
         $data = $this->request->getPostValue();
 
-        // Validate items
         $itemsData = $data['items'] ?? [];
         $selectedItems = $this->rmaSubmitService->getSelectedItems($itemsData);
 
@@ -75,6 +72,7 @@ class Save implements HttpPostActionInterface
         }
 
         try {
+            $attachmentsJson = (string)($data['attachments'] ?? '');
             $rma = $this->rmaSubmitService->createRma(
                 $order,
                 null,
@@ -82,7 +80,8 @@ class Save implements HttpPostActionInterface
                 (string)($order->getBillingAddress()->getName() ?: __('Guest')),
                 (int)($data['reason_id'] ?? 0),
                 (int)($data['resolution_type_id'] ?? 0),
-                $selectedItems
+                $selectedItems,
+                $attachmentsJson
             );
 
             $this->messageManager->addSuccessMessage(

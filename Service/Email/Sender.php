@@ -9,6 +9,7 @@ use MageOS\RMA\Api\Email\SenderInterface;
 use MageOS\RMA\Api\ItemConditionRepositoryInterface;
 use MageOS\RMA\Api\ReasonRepositoryInterface;
 use MageOS\RMA\Api\ResolutionTypeRepositoryInterface;
+use MageOS\RMA\Api\StatusRepositoryInterface;
 use MageOS\RMA\Helper\ModuleConfig;
 use MageOS\RMA\Model\ResourceModel\Item\CollectionFactory as ItemCollectionFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -37,6 +38,7 @@ class Sender implements SenderInterface
      * @param ProductRepositoryInterface $productRepository
      * @param ImageHelper $imageHelper
      * @param ItemConditionRepositoryInterface $itemConditionRepository
+     * @param StatusRepositoryInterface $statusRepository
      */
     public function __construct(
         protected readonly TransportBuilder $transportBuilder,
@@ -50,7 +52,8 @@ class Sender implements SenderInterface
         protected readonly OrderItemRepositoryInterface $orderItemRepository,
         protected readonly ProductRepositoryInterface $productRepository,
         protected readonly ImageHelper $imageHelper,
-        protected readonly ItemConditionRepositoryInterface $itemConditionRepository
+        protected readonly ItemConditionRepositoryInterface $itemConditionRepository,
+        protected readonly StatusRepositoryInterface $statusRepository
     ) {
     }
 
@@ -62,7 +65,7 @@ class Sender implements SenderInterface
     {
         $storeId = (int)$rma->getStoreId();
 
-        if(!$this->moduleConfig->isEnabled($storeId)){
+        if (!$this->moduleConfig->isEnabled($storeId)) {
             return;
         }
 
@@ -77,13 +80,19 @@ class Sender implements SenderInterface
 
     /**
      * @param RMAInterface $rma
-     * @param string $statusLabel
+     * @param int $newStatusId
      * @return void
      */
-    public function sendCustomerStatusChangeEmail(RMAInterface $rma, string $statusLabel): void
+    public function sendCustomerStatusChangeEmail(RMAInterface $rma, int $newStatusId): void
     {
         $storeId = (int)$rma->getStoreId();
+
+        if (!$this->moduleConfig->isEnabled($storeId)) {
+            return;
+        }
+
         $templateId = $this->moduleConfig->getCustomerStatusChangeTemplate($storeId);
+        $statusLabel = $this->getStatusLabel($newStatusId, $storeId);
 
         $this->sendRmaEmail($rma, $templateId, $rma->getCustomerEmail(), $rma->getCustomerName(), [
             'rma_status_label' => $statusLabel,
@@ -98,7 +107,7 @@ class Sender implements SenderInterface
     {
         $storeId = (int)$rma->getStoreId();
 
-        if(!$this->moduleConfig->isEnabled($storeId)){
+        if (!$this->moduleConfig->isEnabled($storeId)) {
             return;
         }
 
@@ -194,7 +203,7 @@ class Sender implements SenderInterface
                 $name = (string)$orderItem->getName();
                 $sku = (string)$orderItem->getSku();
                 $thumbnailUrl = $this->getProductThumbnailUrl((int)$orderItem->getProductId(), $storeId);
-            } catch (Exception $e) {
+            } catch (NoSuchEntityException) {
                 $name = (string)__('Unknown Product');
                 $sku = '';
                 $thumbnailUrl = '';
@@ -232,7 +241,7 @@ class Sender implements SenderInterface
                 ->init($product, 'product_thumbnail_image')
                 ->resize(75, 75)
                 ->getUrl();
-        } catch (Exception $e) {
+        } catch (NoSuchEntityException) {
             return '';
         }
     }
@@ -251,7 +260,7 @@ class Sender implements SenderInterface
         try {
             $condition = $this->itemConditionRepository->get($conditionId);
             return $condition->getStoreLabel($storeId);
-        } catch (Exception $e) {
+        } catch (NoSuchEntityException) {
             return '';
         }
     }
@@ -265,7 +274,7 @@ class Sender implements SenderInterface
         try {
             $reason = $this->reasonRepository->get($rma->getReasonId());
             return $reason->getStoreLabel((int)$rma->getStoreId());
-        } catch (Exception $e) {
+        } catch (NoSuchEntityException) {
             return '';
         }
     }
@@ -279,8 +288,23 @@ class Sender implements SenderInterface
         try {
             $resolutionType = $this->resolutionTypeRepository->get($rma->getResolutionTypeId());
             return $resolutionType->getStoreLabel((int)$rma->getStoreId());
-        } catch (Exception $e) {
+        } catch (NoSuchEntityException) {
             return '';
+        }
+    }
+
+    /**
+     * @param int $statusId
+     * @param int $storeId
+     * @return string
+     */
+    protected function getStatusLabel(int $statusId, int $storeId): string
+    {
+        try {
+            $status = $this->statusRepository->get($statusId);
+            return $status->getStoreLabel($storeId);
+        } catch (NoSuchEntityException) {
+            return (string)__('Unknown');
         }
     }
 }

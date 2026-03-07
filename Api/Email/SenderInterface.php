@@ -16,10 +16,10 @@ interface SenderInterface
 
     /**
      * @param RMAInterface $rma
-     * @param string $statusLabel
+     * @param int $newStatusId
      * @return void
      */
-    public function sendCustomerStatusChangeEmail(RMAInterface $rma, string $statusLabel): void;
+    public function sendCustomerStatusChangeEmail(RMAInterface $rma, int $newStatusId): void;
 
     /**
      * @param RMAInterface $rma

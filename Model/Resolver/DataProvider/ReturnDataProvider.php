@@ -10,8 +10,9 @@ use MageOS\RMA\Api\Data\RMAInterface;
 use MageOS\RMA\Api\ItemRepositoryInterface;
 use MageOS\RMA\Service\LabelResolver;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class ReturnDataProvider
 {
@@ -37,16 +38,23 @@ class ReturnDataProvider
      */
     public function formatRma(RMAInterface $rma): array
     {
-        $orderId = (int)$rma->getOrderId();
+        try {
+            $order = $this->orderRepository->get($rma->getOrderId());
+            $orderNumber = $order->getIncrementId();
+            $orderItemsMap = $this->buildOrderItemsMap($order);
+        } catch (NoSuchEntityException) {
+            $orderNumber = null;
+            $orderItemsMap = [];
+        }
 
         return [
             'rma_id' => $rma->getEntityId(),
             'increment_id' => $rma->getIncrementId(),
-            'order_number' => $this->getOrderIncrementId($orderId),
+            'order_number' => $orderNumber,
             'status' => $this->labelResolver->resolveAsArray(LabelResolver::TYPE_STATUS, $rma->getStatusId()),
             'reason' => $this->labelResolver->resolveAsArray(LabelResolver::TYPE_REASON, $rma->getReasonId()),
             'resolution_type' => $this->labelResolver->resolveAsArray(LabelResolver::TYPE_RESOLUTION_TYPE, $rma->getResolutionTypeId()),
-            'items' => $this->getItems((int)$rma->getEntityId(), $orderId),
+            'items' => $this->getItems((int)$rma->getEntityId(), $orderItemsMap),
             'comments' => $this->getVisibleComments((int)$rma->getEntityId()),
             'created_at' => $rma->getCreatedAt(),
             'updated_at' => $rma->getUpdatedAt(),
@@ -55,20 +63,15 @@ class ReturnDataProvider
 
     /**
      * @param int $rmaId
-     * @param int $orderId
+     * @param array $orderItemsMap
      * @return array
      */
-    protected function getItems(int $rmaId, int $orderId): array
+    protected function getItems(int $rmaId, array $orderItemsMap): array
     {
-        $items = $this->loadRmaItems($rmaId);
-        $orderItemsMap = $this->buildOrderItemsMap($orderId);
-
-        $result = [];
-        foreach ($items as $item) {
-            $result[] = $this->buildItemData($item, $orderItemsMap);
-        }
-
-        return $result;
+        return array_map(
+            fn($item) => $this->buildItemData($item, $orderItemsMap),
+            $this->loadRmaItems($rmaId)
+        );
     }
 
     /**
@@ -85,17 +88,11 @@ class ReturnDataProvider
     }
 
     /**
-     * @param int $orderId
+     * @param OrderInterface $order
      * @return array
      */
-    protected function buildOrderItemsMap(int $orderId): array
+    protected function buildOrderItemsMap(OrderInterface $order): array
     {
-        try {
-            $order = $this->orderRepository->get($orderId);
-        } catch (NoSuchEntityException) {
-            return [];
-        }
-
         $map = [];
         foreach ($order->getItems() as $orderItem) {
             $map[(int)$orderItem->getItemId()] = $orderItem;
@@ -158,18 +155,5 @@ class ReturnDataProvider
             'comment' => $c->getComment(),
             'created_at' => $c->getCreatedAt(),
         ], array_values($comments));
-    }
-
-    /**
-     * @param int $orderId
-     * @return string|null
-     */
-    protected function getOrderIncrementId(int $orderId): ?string
-    {
-        try {
-            return $this->orderRepository->get($orderId)->getIncrementId();
-        } catch (NoSuchEntityException) {
-            return null;
-        }
     }
 }

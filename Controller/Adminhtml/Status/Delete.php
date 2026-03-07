@@ -4,59 +4,41 @@ declare(strict_types=1);
 
 namespace MageOS\RMA\Controller\Adminhtml\Status;
 
-use Magento\Framework\App\Action\HttpPostActionInterface;
 use MageOS\RMA\Api\StatusRepositoryInterface;
-use MageOS\RMA\Controller\Adminhtml\Status as BaseController;
+use MageOS\RMA\Controller\Adminhtml\AbstractLookupDelete;
 use MageOS\RMA\Model\RMA\StatusCodes;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\Result\Redirect;
-use Magento\Framework\Controller\ResultInterface;
-use Exception;
 
-class Delete extends BaseController implements HttpPostActionInterface
+class Delete extends AbstractLookupDelete
 {
+    const string ADMIN_RESOURCE = 'MageOS_RMA::rma_status';
+
     /**
      * @param Context $context
      * @param StatusRepositoryInterface $statusRepository
      */
     public function __construct(
         Context $context,
-        protected readonly StatusRepositoryInterface $statusRepository
+        StatusRepositoryInterface $statusRepository
     ) {
-        parent::__construct($context);
+        parent::__construct($context, $statusRepository, 'status');
     }
 
     /**
-     * @return ResultInterface|ResponseInterface|Redirect
+     * @param object $entity
+     * @return bool
      */
-    public function execute(): ResultInterface|ResponseInterface|Redirect
+    protected function isProtected(object $entity): bool
     {
-        $resultRedirect = $this->resultRedirectFactory->create();
-        $id = (int)$this->getRequest()->getParam('entity_id');
+        return StatusCodes::isProtected($entity->getCode());
+    }
 
-        if (!$id) {
-            $this->messageManager->addErrorMessage(__('We can\'t find a status to delete.'));
-            return $resultRedirect->setPath('*/*/');
-        }
-
-        try {
-            $status = $this->statusRepository->get($id);
-
-            if (StatusCodes::isProtected($status->getCode())) {
-                $this->messageManager->addErrorMessage(
-                    __('The status "%1" is used by the system and cannot be deleted.', $status->getLabel())
-                );
-                return $resultRedirect->setPath('*/*/edit', ['entity_id' => $id]);
-            }
-
-            $this->statusRepository->delete($status);
-            $this->messageManager->addSuccessMessage(__('You deleted the status.'));
-        } catch (Exception $e) {
-            $this->messageManager->addErrorMessage($e->getMessage());
-            return $resultRedirect->setPath('*/*/edit', ['entity_id' => $id]);
-        }
-
-        return $resultRedirect->setPath('*/*/');
+    /**
+     * @param object $entity
+     * @return string
+     */
+    protected function getProtectedMessage(object $entity): string
+    {
+        return (string)__('The status "%1" is used by the system and cannot be deleted.', $entity->getLabel());
     }
 }

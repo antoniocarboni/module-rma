@@ -119,12 +119,10 @@ class Comments extends Template
             return [];
         }
 
-        $result = [];
-        foreach ($this->attachmentService->getByRmaId($rmaId) as $attachment) {
-            $result[] = $this->attachmentService->toArray($attachment);
-        }
-
-        return $result;
+        return array_map(
+            [$this->attachmentService, 'toArray'],
+            $this->attachmentService->getByRmaId($rmaId)
+        );
     }
 
     /**

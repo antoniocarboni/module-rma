@@ -45,12 +45,10 @@ class CommentFormatter
 
         $collection->setOrder('created_at', 'ASC');
 
-        $comments = [];
-        foreach ($collection as $comment) {
-            $comments[] = $this->toArray($comment, $includeVisibility);
-        }
-
-        return $comments;
+        return array_map(
+            fn($comment) => $this->toArray($comment, $includeVisibility),
+            $collection->getItems()
+        );
     }
 
     /**
@@ -86,13 +84,9 @@ class CommentFormatter
      */
     protected function formatAttachments(int $commentId): array
     {
-        $attachments = $this->attachmentService->getByCommentId($commentId);
-        $result = [];
-
-        foreach ($attachments as $attachment) {
-            $result[] = $this->attachmentService->toArray($attachment);
-        }
-
-        return $result;
+        return array_map(
+            [$this->attachmentService, 'toArray'],
+            $this->attachmentService->getByCommentId($commentId)
+        );
     }
 }

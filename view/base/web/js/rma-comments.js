@@ -223,7 +223,12 @@ define([
                         if (uploadApi) {
                             uploadApi.clear();
                         }
+                    } else {
+                        alert(response.message || $t('Could not save comment.'));
                     }
+                },
+                error: function () {
+                    alert($t('Could not save comment.'));
                 },
                 complete: function () {
                     sending = false;
@@ -233,7 +238,7 @@ define([
             });
         }
 
-        function handleDeleteAttachment($btn, attachmentId) {
+        function deleteAttachment(attachmentId) {
             if (!confirm($t('Delete this attachment?'))) {
                 return;
             }
@@ -248,7 +253,8 @@ define([
                 },
                 success: function (response) {
                     if (response.success) {
-                        $btn.closest('.rma-attachment-item').remove();
+                        $timeline.find('.rma-attachment-delete[data-id="' + attachmentId + '"]')
+                            .closest('.rma-attachment-item').remove();
                         $allAttachments.find('[data-attachment-id="' + attachmentId + '"]').remove();
 
                         if (!$allAttachments.find('[data-attachment-id]').length) {
@@ -257,53 +263,26 @@ define([
                                 $t('No attachments yet.') + '</li>'
                             );
                         }
+                    } else {
+                        alert(response.message || $t('Could not delete attachment.'));
                     }
+                },
+                error: function () {
+                    alert($t('Could not delete attachment.'));
                 }
             });
         }
 
-        // Admin: delete attachment from comment timeline
         if (isAdmin && deleteUrl) {
             $timeline.on('click', '.rma-attachment-delete', function () {
-                handleDeleteAttachment($(this), $(this).data('id'));
+                deleteAttachment($(this).data('id'));
             });
 
-            // Admin: delete attachment from unified section
             $allAttachments.on('click', '.rma-unified-attachment-delete', function () {
-                let attachmentId = $(this).data('id'),
-                    $li = $(this).closest('li');
-
-                if (!confirm($t('Delete this attachment?'))) {
-                    return;
-                }
-
-                $.ajax({
-                    url: deleteUrl,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        id: attachmentId,
-                        form_key: window.FORM_KEY
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            $li.remove();
-                            $timeline.find('.rma-attachment-delete[data-id="' + attachmentId + '"]')
-                                .closest('.rma-attachment-item').remove();
-
-                            if (!$allAttachments.find('[data-attachment-id]').length) {
-                                $allAttachments.append(
-                                    '<li class="rma-no-attachments" style="color: #999; font-style: italic; padding: 4px 0;">' +
-                                    $t('No attachments yet.') + '</li>'
-                                );
-                            }
-                        }
-                    }
-                });
+                deleteAttachment($(this).data('id'));
             });
         }
 
-        // Visibility API: pause when tab is hidden, resume when visible
         $(document).on('visibilitychange', function () {
             if (document.hidden) {
                 stopPoll();
@@ -313,10 +292,8 @@ define([
             }
         });
 
-        // Submit on button click
         $submitBtn.on('click', submitComment);
 
-        // Submit on Ctrl+Enter
         $textarea.on('keydown', function (e) {
             if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
@@ -324,7 +301,6 @@ define([
             }
         });
 
-        // Initial scroll and start polling
         scrollToBottom();
         schedulePoll();
     };

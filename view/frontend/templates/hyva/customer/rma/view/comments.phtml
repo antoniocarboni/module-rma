@@ -340,7 +340,11 @@ $downloadUrl = $block->getDownloadUrl();
                         this.uploadedFiles = [];
                         this.scrollToBottom();
                         this.currentInterval = this.baseInterval;
+                    } else {
+                        alert(data.message || '<?= $block->escapeJs(__('Could not save comment.')) ?>');
                     }
+                } catch {
+                    alert('<?= $block->escapeJs(__('Could not save comment.')) ?>');
                 } finally {
                     this.sending = false;
                     this.$refs.textarea.focus();

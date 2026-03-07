@@ -97,6 +97,17 @@ class Save extends BaseController implements HttpPostActionInterface
             return $resultRedirect->setPath('*/*/new');
         }
 
+        $statusId = (int)($data['status_id'] ?? 0);
+        $reasonId = (int)($data['reason_id'] ?? 0);
+        $resolutionTypeId = (int)($data['resolution_type_id'] ?? 0);
+
+        if (!$statusId || !$reasonId || !$resolutionTypeId) {
+            $this->messageManager->addErrorMessage(__('Invalid request.'));
+            $this->dataPersistor->set('rma_entity', $data);
+
+            return $resultRedirect->setPath('*/*/new');
+        }
+
         $selectedItems = $this->rmaSubmitService->getSelectedItems($data['items'] ?? []);
 
         if (empty($selectedItems)) {
