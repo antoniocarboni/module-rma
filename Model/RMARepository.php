@@ -18,6 +18,7 @@ use Magento\Framework\Event\ManagerInterface as EventManagerInterface;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\LocalizedException;
 use Exception;
 
 class RMARepository implements RMARepositoryInterface
@@ -79,7 +80,7 @@ class RMARepository implements RMARepositoryInterface
     /**
      * @param RMAInterface $rma
      * @return RMAInterface
-     * @throws CouldNotSaveException
+     * @throws CouldNotSaveException|LocalizedException
      */
     public function save(RMAInterface $rma): RMAInterface
     {

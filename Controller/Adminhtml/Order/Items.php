@@ -37,6 +37,7 @@ class Items extends Action implements HttpGetActionInterface
 
     /**
      * @return ResultInterface
+     * @throws NoSuchEntityException
      */
     public function execute(): ResultInterface
     {

@@ -15,29 +15,29 @@ $conditions = $block->getConditions();
 <div class="block block-rma-create">
     <div class="block-content">
         <form id="rma-create-form"
-              action="<?= $block->escapeUrl($block->getPostUrl()) ?>"
+              action="<?= $escaper->escapeUrl($block->getPostUrl()) ?>"
               method="post"
               data-mage-init='{"MageOS_RMA/js/rma-create": {
-                  "itemsAjaxUrl": "<?= $block->escapeUrl($block->getItemsAjaxUrl()) ?>",
+                  "itemsAjaxUrl": "<?= $escaper->escapeUrl($block->getItemsAjaxUrl()) ?>",
                   "conditions": <?= /* @noEscape */ json_encode($conditions) ?>
               }}'>
             <?= /* @noEscape */ $block->getBlockHtml('formkey') ?>
 
             <fieldset class="fieldset">
-                <legend class="legend"><span><?= $block->escapeHtml(__('Return Details')) ?></span></legend>
+                <legend class="legend"><span><?= $escaper->escapeHtml(__('Return Details')) ?></span></legend>
 
                 <div class="field field-order required">
                     <label class="label" for="order_id">
-                        <span><?= $block->escapeHtml(__('Order')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Order')) ?></span>
                     </label>
                     <div class="control">
                         <select name="order_id" id="order_id" class="select" required
                                 <?php if ($preselectedOrderId): ?>disabled="disabled"<?php endif; ?>>
-                            <option value=""><?= $block->escapeHtml(__('-- Select an order --')) ?></option>
+                            <option value=""><?= $escaper->escapeHtml(__('-- Select an order --')) ?></option>
                             <?php foreach ($eligibleOrders as $order): ?>
                                 <option value="<?= (int)$order['value'] ?>"
                                         <?php if ($preselectedOrderId === (int)$order['value']): ?>selected="selected"<?php endif; ?>>
-                                    <?= $block->escapeHtml($order['label']) ?>
+                                    <?= $escaper->escapeHtml($order['label']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -49,20 +49,20 @@ $conditions = $block->getConditions();
 
                 <div id="rma-order-items-container" class="field">
                     <div class="message info">
-                        <span><?= $block->escapeHtml(__('Select an order to see available items.')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Select an order to see available items.')) ?></span>
                     </div>
                 </div>
 
                 <div class="field field-reason required">
                     <label class="label" for="reason_id">
-                        <span><?= $block->escapeHtml(__('Reason')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Reason')) ?></span>
                     </label>
                     <div class="control">
                         <select name="reason_id" id="reason_id" class="select" required>
-                            <option value=""><?= $block->escapeHtml(__('-- Select a reason --')) ?></option>
+                            <option value=""><?= $escaper->escapeHtml(__('-- Select a reason --')) ?></option>
                             <?php foreach ($reasons as $reason): ?>
                                 <option value="<?= (int)$reason['value'] ?>">
-                                    <?= $block->escapeHtml($reason['label']) ?>
+                                    <?= $escaper->escapeHtml($reason['label']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -71,14 +71,14 @@ $conditions = $block->getConditions();
 
                 <div class="field field-resolution required">
                     <label class="label" for="resolution_type_id">
-                        <span><?= $block->escapeHtml(__('Preferred Resolution')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Preferred Resolution')) ?></span>
                     </label>
                     <div class="control">
                         <select name="resolution_type_id" id="resolution_type_id" class="select" required>
-                            <option value=""><?= $block->escapeHtml(__('-- Select a resolution --')) ?></option>
+                            <option value=""><?= $escaper->escapeHtml(__('-- Select a resolution --')) ?></option>
                             <?php foreach ($resolutionTypes as $resolution): ?>
                                 <option value="<?= (int)$resolution['value'] ?>">
-                                    <?= $block->escapeHtml($resolution['label']) ?>
+                                    <?= $escaper->escapeHtml($resolution['label']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -87,21 +87,21 @@ $conditions = $block->getConditions();
 
                 <div class="field field-attachments">
                     <label class="label">
-                        <span><?= $block->escapeHtml(__('Attachments')) ?></span>
+                        <span><?= $escaper->escapeHtml(__('Attachments')) ?></span>
                     </label>
                     <div class="control">
                         <div id="rma-create-upload-widget"
                              data-mage-init='{"MageOS_RMA/js/rma-file-upload": {
-                                 "uploadUrl": "<?= $block->escapeUrl($block->getUploadUrl()) ?>",
-                                 "allowedExtensions": "<?= $block->escapeHtmlAttr($block->getAllowedExtensions()) ?>",
+                                 "uploadUrl": "<?= $escaper->escapeUrl($block->getUploadUrl()) ?>",
+                                 "allowedExtensions": "<?= $escaper->escapeHtmlAttr($block->getAllowedExtensions()) ?>",
                                  "maxFileSize": <?= (int)$block->getMaxFileSize() ?>,
                                  "maxFiles": <?= (int)$block->getMaxFiles() ?>,
-                                 "formKey": "<?= $block->escapeJs($block->getFormKey()) ?>"
+                                 "formKey": "<?= $escaper->escapeJs($block->getFormKey()) ?>"
                              }}'>
                             <div class="rma-upload-dropzone" style="border: 2px dashed #ccc; border-radius: 6px; padding: 20px; text-align: center; cursor: pointer; background: #fafafa;">
-                                <p style="margin: 0; color: #666;"><?= $block->escapeHtml(__('Drag & drop files here or click to browse')) ?></p>
+                                <p style="margin: 0; color: #666;"><?= $escaper->escapeHtml(__('Drag & drop files here or click to browse')) ?></p>
                                 <p style="margin: 4px 0 0; font-size: 11px; color: #999;">
-                                    <?= $block->escapeHtml(__('Allowed: %1 | Max size: %2 MB | Max files: %3', $block->getAllowedExtensions(), $block->getMaxFileSize(), $block->getMaxFiles())) ?>
+                                    <?= $escaper->escapeHtml(__('Allowed: %1 | Max size: %2 MB | Max files: %3', $block->getAllowedExtensions(), $block->getMaxFileSize(), $block->getMaxFiles())) ?>
                                 </p>
                             </div>
                             <input type="file" class="rma-upload-input" style="display: none;" multiple/>
@@ -114,13 +114,13 @@ $conditions = $block->getConditions();
 
             <div class="actions-toolbar">
                 <div class="primary">
-                    <button type="submit" class="action submit primary" title="<?= $block->escapeHtmlAttr(__('Submit Return Request')) ?>">
-                        <span><?= $block->escapeHtml(__('Submit Return Request')) ?></span>
+                    <button type="submit" class="action submit primary" title="<?= $escaper->escapeHtmlAttr(__('Submit Return Request')) ?>">
+                        <span><?= $escaper->escapeHtml(__('Submit Return Request')) ?></span>
                     </button>
                 </div>
                 <div class="secondary">
-                    <a href="<?= $block->escapeUrl($block->getBackUrl()) ?>" class="action back">
-                        <span><?= $block->escapeHtml(__('Back')) ?></span>
+                    <a href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>" class="action back">
+                        <span><?= $escaper->escapeHtml(__('Back')) ?></span>
                     </a>
                 </div>
             </div>

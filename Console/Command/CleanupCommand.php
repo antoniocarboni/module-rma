@@ -130,7 +130,6 @@ class CleanupCommand extends Command
         $prefix = $dryRun ? '[DRY-RUN] ' : '';
         $count = 0;
 
-        /** @var RMAInterface $rma */
         foreach ($results->getItems() as $rma) {
             $output->writeln(sprintf(
                 '%s<comment>Canceling RMA %s (last updated: %s)</comment>',
@@ -194,6 +193,6 @@ class CleanupCommand extends Command
         $collection = $this->statusCollectionFactory->create();
         $collection->addFieldToFilter(StatusInterface::CODE, ['in' => self::CLOSED_STATUSES]);
 
-        return array_map(fn($status) => (int)$status->getEntityId(), $collection->getItems());
+        return array_values(array_map(fn($status) => (int)$status->getEntityId(), $collection->getItems()));
     }
 }

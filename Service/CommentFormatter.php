@@ -45,10 +45,10 @@ class CommentFormatter
 
         $collection->setOrder('created_at', 'ASC');
 
-        return array_map(
+        return array_values(array_map(
             fn($comment) => $this->toArray($comment, $includeVisibility),
             $collection->getItems()
-        );
+        ));
     }
 
     /**
@@ -84,9 +84,9 @@ class CommentFormatter
      */
     protected function formatAttachments(int $commentId): array
     {
-        return array_map(
+        return array_values(array_map(
             [$this->attachmentService, 'toArray'],
             $this->attachmentService->getByCommentId($commentId)
-        );
+        ));
     }
 }

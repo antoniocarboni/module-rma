@@ -42,7 +42,7 @@ class Save implements HttpPostActionInterface
      * @return ResultInterface
      * @throws InputException
      * @throws CookieSizeLimitReachedException
-     * @throws FailureToSendException
+     * @throws FailureToSendException|LocalizedException
      */
     public function execute(): ResultInterface
     {

@@ -24,19 +24,19 @@ $downloadUrl = $block->getDownloadUrl();
 <div class="bg-white border border-gray-200 rounded-lg p-6 mt-6"
      x-data="rmaComments({
          rmaId: <?= (int)$rmaId ?>,
-         saveUrl: '<?= $block->escapeJs($block->getSaveUrl()) ?>',
-         loadListUrl: '<?= $block->escapeJs($block->getLoadListUrl()) ?>',
+         saveUrl: '<?= $escaper->escapeJs($block->getSaveUrl()) ?>',
+         loadListUrl: '<?= $escaper->escapeJs($block->getLoadListUrl()) ?>',
          lastCommentId: <?= (int)$lastId ?>,
-         uploadUrl: '<?= $block->escapeJs($block->getUploadUrl()) ?>',
-         downloadUrl: '<?= $block->escapeJs($downloadUrl) ?>',
-         allowedExtensions: '<?= $block->escapeJs($block->getAllowedExtensions()) ?>',
+         uploadUrl: '<?= $escaper->escapeJs($block->getUploadUrl()) ?>',
+         downloadUrl: '<?= $escaper->escapeJs($downloadUrl) ?>',
+         allowedExtensions: '<?= $escaper->escapeJs($block->getAllowedExtensions()) ?>',
          maxFileSize: <?= (int)$block->getMaxFileSize() ?>,
          maxFiles: <?= (int)$block->getMaxFiles() ?>
      })"
      x-init="init()">
 
     <h3 class="text-lg font-semibold text-gray-800 mb-4">
-        <?= $block->escapeHtml(__('Comments')) ?>
+        <?= $escaper->escapeHtml(__('Comments')) ?>
     </h3>
 
     <div x-ref="timeline"
@@ -44,7 +44,7 @@ $downloadUrl = $block->getDownloadUrl();
         <?php if (empty($comments)): ?>
             <p x-show="commentsList.length === 0"
                class="text-sm text-gray-400 italic">
-                <?= $block->escapeHtml(__('No comments yet. Start the conversation!')) ?>
+                <?= $escaper->escapeHtml(__('No comments yet. Start the conversation!')) ?>
             </p>
         <?php else: ?>
             <?php foreach ($comments as $comment): ?>
@@ -53,20 +53,20 @@ $downloadUrl = $block->getDownloadUrl();
                     : 'bg-white border border-gray-200 mr-6' ?>"
                      data-comment-id="<?= (int)$comment['entity_id'] ?>">
                     <div class="flex items-center gap-2 mb-1 text-xs text-gray-500">
-                        <strong class="text-gray-700"><?= $block->escapeHtml($comment['author_name']) ?></strong>
+                        <strong class="text-gray-700"><?= $escaper->escapeHtml($comment['author_name']) ?></strong>
                         <?php if ($comment['author_type'] === 'admin'): ?>
-                            <span class="text-blue-600 font-medium"><?= $block->escapeHtml(__('Support')) ?></span>
+                            <span class="text-blue-600 font-medium"><?= $escaper->escapeHtml(__('Support')) ?></span>
                         <?php endif; ?>
-                        <span><?= $block->escapeHtml($comment['created_at']) ?></span>
+                        <span><?= $escaper->escapeHtml($comment['created_at']) ?></span>
                     </div>
-                    <div class="whitespace-pre-wrap text-gray-800"><?= $block->escapeHtml($comment['comment']) ?></div>
+                    <div class="whitespace-pre-wrap text-gray-800"><?= $escaper->escapeHtml($comment['comment']) ?></div>
                     <?php if (!empty($comment['attachments'])): ?>
                         <div class="mt-2 pt-2 border-t border-gray-200 space-y-1">
                             <?php foreach ($comment['attachments'] as $att): ?>
                                 <div class="text-xs">
-                                    <a href="<?= $block->escapeUrl($downloadUrl . (str_contains($downloadUrl, '?') ? '&' : '?') . 'id=' . (int)$att['entity_id']) ?>"
+                                    <a href="<?= $escaper->escapeUrl($downloadUrl . (str_contains($downloadUrl, '?') ? '&' : '?') . 'id=' . (int)$att['entity_id']) ?>"
                                        target="_blank" class="text-primary hover:underline">
-                                        &#128206; <?= $block->escapeHtml($att['file_name']) ?>
+                                        &#128206; <?= $escaper->escapeHtml($att['file_name']) ?>
                                     </a>
                                 </div>
                             <?php endforeach; ?>
@@ -84,7 +84,7 @@ $downloadUrl = $block->getDownloadUrl();
                 <div class="flex items-center gap-2 mb-1 text-xs text-gray-500">
                     <strong class="text-gray-700" x-text="comment.author_name"></strong>
                     <template x-if="comment.author_type === 'admin'">
-                        <span class="text-blue-600 font-medium"><?= $block->escapeHtml(__('Support')) ?></span>
+                        <span class="text-blue-600 font-medium"><?= $escaper->escapeHtml(__('Support')) ?></span>
                     </template>
                     <span x-text="comment.created_at"></span>
                 </div>
@@ -111,7 +111,7 @@ $downloadUrl = $block->getDownloadUrl();
                   @keydown.ctrl.enter.prevent="submitComment()"
                   rows="3"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none resize-y"
-                  :placeholder="'<?= $block->escapeJs(__('Type your message...')) ?>'"
+                  :placeholder="'<?= $escaper->escapeJs(__('Type your message...')) ?>'"
         ></textarea>
 
         <!-- File upload -->
@@ -122,7 +122,10 @@ $downloadUrl = $block->getDownloadUrl();
                  @drop.prevent="uploadDragOver = false; handleUploadFiles($event.dataTransfer.files)"
                  :class="uploadDragOver ? 'border-primary bg-blue-50' : 'border-gray-300 bg-gray-50'"
                  class="border-2 border-dashed rounded-lg p-3 text-center cursor-pointer transition-colors">
-                <p class="text-xs text-gray-500 m-0"><?= $block->escapeHtml(__('Drag & drop files or click to attach')) ?></p>
+                <p class="text-xs text-gray-500 m-0"><?= $escaper->escapeHtml(__('Drag & drop files or click to attach')) ?></p>
+                <p class="text-xs text-gray-400 m-0 mt-1">
+                    <?= $escaper->escapeHtml(__('Allowed: %1 | Max size: %2 MB | Max files: %3', $block->getAllowedExtensions(), $block->getMaxFileSize(), $block->getMaxFiles())) ?>
+                </p>
             </div>
             <input type="file" x-ref="commentFileInput" @change="handleUploadFiles($event.target.files); $event.target.value = ''" class="hidden" multiple/>
             <template x-for="(file, index) in uploadedFiles" :key="index">
@@ -144,7 +147,7 @@ $downloadUrl = $block->getDownloadUrl();
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
                 </template>
-                <?= $block->escapeHtml(__('Send')) ?>
+                <?= $escaper->escapeHtml(__('Send')) ?>
             </button>
         </div>
     </div>
@@ -243,11 +246,11 @@ $downloadUrl = $block->getDownloadUrl();
                     if (this.uploadedFiles.length >= this.maxFiles) return;
                     const ext = file.name.split('.').pop().toLowerCase();
                     if (this.allowedExtensions.length && this.allowedExtensions[0] !== '' && !this.allowedExtensions.includes(ext)) {
-                        alert('<?= $block->escapeJs(__('File type not allowed.')) ?>');
+                        alert('<?= $escaper->escapeJs(__('File type not allowed.')) ?>');
                         return;
                     }
                     if (file.size > this.maxFileSize) {
-                        alert('<?= $block->escapeJs(__('File exceeds the maximum allowed size.')) ?>');
+                        alert('<?= $escaper->escapeJs(__('File exceeds the maximum allowed size.')) ?>');
                         return;
                     }
                     this.uploadToTmp(file);
@@ -269,10 +272,10 @@ $downloadUrl = $block->getDownloadUrl();
                     if (data.success && data.file) {
                         this.uploadedFiles.push(data.file);
                     } else {
-                        alert(data.message || '<?= $block->escapeJs(__('Upload failed.')) ?>');
+                        alert(data.message || '<?= $escaper->escapeJs(__('Upload failed.')) ?>');
                     }
                 } catch {
-                    alert('<?= $block->escapeJs(__('Upload failed.')) ?>');
+                    alert('<?= $escaper->escapeJs(__('Upload failed.')) ?>');
                 }
             },
 
@@ -341,10 +344,10 @@ $downloadUrl = $block->getDownloadUrl();
                         this.scrollToBottom();
                         this.currentInterval = this.baseInterval;
                     } else {
-                        alert(data.message || '<?= $block->escapeJs(__('Could not save comment.')) ?>');
+                        alert(data.message || '<?= $escaper->escapeJs(__('Could not save comment.')) ?>');
                     }
                 } catch {
-                    alert('<?= $block->escapeJs(__('Could not save comment.')) ?>');
+                    alert('<?= $escaper->escapeJs(__('Could not save comment.')) ?>');
                 } finally {
                     this.sending = false;
                     this.$refs.textarea.focus();

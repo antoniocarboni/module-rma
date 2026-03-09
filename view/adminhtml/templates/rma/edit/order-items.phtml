@@ -13,26 +13,26 @@ $rmaItems = $isEdit ? $block->getRmaItems() : null;
 <?php if ($isEdit && $rmaItems): ?>
 <section class="admin__page-section">
     <div class="admin__page-section-title">
-        <span class="title"><?= $block->escapeHtml(__('Requested Items')) ?></span>
+        <span class="title"><?= $escaper->escapeHtml(__('Requested Items')) ?></span>
     </div>
     <div class="admin__page-section-content">
         <table class="admin__table-secondary rma-items-table">
             <thead>
                 <tr>
-                    <th><?= $block->escapeHtml(__('Product Name')) ?></th>
-                    <th><?= $block->escapeHtml(__('SKU')) ?></th>
-                    <th><?= $block->escapeHtml(__('Qty Requested')) ?></th>
-                    <th><?= $block->escapeHtml(__('Condition')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Product Name')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('SKU')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Qty Requested')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Condition')) ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($rmaItems as $item): ?>
                     <?php $orderItemInfo = $block->getOrderItemInfo((int)$item->getOrderItemId()); ?>
                     <tr>
-                        <td><?= $block->escapeHtml($orderItemInfo['name']) ?></td>
-                        <td><?= $block->escapeHtml($orderItemInfo['sku']) ?></td>
+                        <td><?= $escaper->escapeHtml($orderItemInfo['name']) ?></td>
+                        <td><?= $escaper->escapeHtml($orderItemInfo['sku']) ?></td>
                         <td><?= (int)$item->getQtyRequested() ?></td>
-                        <td><?= $block->escapeHtml($block->getConditionLabel($item->getConditionId())) ?></td>
+                        <td><?= $escaper->escapeHtml($block->getConditionLabel($item->getConditionId())) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -42,11 +42,11 @@ $rmaItems = $isEdit ? $block->getRmaItems() : null;
 <?php elseif (!$isEdit): ?>
 <section class="admin__page-section" id="rma-order-items-section">
     <div class="admin__page-section-title">
-        <span class="title"><?= $block->escapeHtml(__('Order Items')) ?></span>
+        <span class="title"><?= $escaper->escapeHtml(__('Order Items')) ?></span>
     </div>
     <div class="admin__page-section-content">
         <div id="rma-order-items-container">
-            <p class="rma-items-message"><?= $block->escapeHtml(__('Select an order to see available items.')) ?></p>
+            <p class="rma-items-message"><?= $escaper->escapeHtml(__('Select an order to see available items.')) ?></p>
         </div>
     </div>
 </section>

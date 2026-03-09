@@ -32,12 +32,6 @@ class ReturnLink extends Link
     }
 
     /**
-     * Get current order from registry.
-     *
-     * Registry is used here because Magento core (Sales module) registers the order
-     * as 'current_order' in both customer and guest order detail pages.
-     * This is the only supported way to access the order in layout blocks on those pages.
-     *
      * @return OrderInterface|null
      */
     protected function getCurrentOrder(): ?OrderInterface

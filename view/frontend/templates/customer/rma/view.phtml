@@ -15,46 +15,46 @@ $attachments = $block->getAttachments();
 ?>
 <div class="block block-rma-view">
     <div class="block-title">
-        <a href="<?= $block->escapeUrl($block->getBackUrl()) ?>" class="action back">
-            <span><?= $block->escapeHtml(__('Back to My Returns')) ?></span>
+        <a href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>" class="action back">
+            <span><?= $escaper->escapeHtml(__('Back to My Returns')) ?></span>
         </a>
     </div>
 
     <div class="block-content">
         <div class="box box-rma-info">
             <strong class="box-title">
-                <span><?= $block->escapeHtml(__('Return Information')) ?></span>
+                <span><?= $escaper->escapeHtml(__('Return Information')) ?></span>
             </strong>
             <div class="box-content">
                 <table class="data table table-rma-info">
                     <tbody>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('RMA #')) ?></th>
-                            <td><?= $block->escapeHtml($rma->getIncrementId()) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('RMA #')) ?></th>
+                            <td><?= $escaper->escapeHtml($rma->getIncrementId()) ?></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Order #')) ?></th>
-                            <td>#<?= $block->escapeHtml($block->getOrderIncrementId()) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Order #')) ?></th>
+                            <td>#<?= $escaper->escapeHtml($block->getOrderIncrementId()) ?></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Status')) ?></th>
-                            <td><strong><?= $block->escapeHtml($block->getStatusLabel()) ?></strong></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                            <td><strong><?= $escaper->escapeHtml($block->getStatusLabel()) ?></strong></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Reason')) ?></th>
-                            <td><?= $block->escapeHtml($block->getReasonLabel()) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Reason')) ?></th>
+                            <td><?= $escaper->escapeHtml($block->getReasonLabel()) ?></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Preferred Resolution')) ?></th>
-                            <td><?= $block->escapeHtml($block->getResolutionTypeLabel()) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Preferred Resolution')) ?></th>
+                            <td><?= $escaper->escapeHtml($block->getResolutionTypeLabel()) ?></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Created At')) ?></th>
-                            <td><?= $block->escapeHtml($block->formatDate($rma->getCreatedAt(), \IntlDateFormatter::MEDIUM, true)) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Created At')) ?></th>
+                            <td><?= $escaper->escapeHtml($block->formatDate($rma->getCreatedAt(), \IntlDateFormatter::MEDIUM, true)) ?></td>
                         </tr>
                         <tr>
-                            <th scope="row"><?= $block->escapeHtml(__('Updated At')) ?></th>
-                            <td><?= $block->escapeHtml($block->formatDate($rma->getUpdatedAt(), \IntlDateFormatter::MEDIUM, true)) ?></td>
+                            <th scope="row"><?= $escaper->escapeHtml(__('Updated At')) ?></th>
+                            <td><?= $escaper->escapeHtml($block->formatDate($rma->getUpdatedAt(), \IntlDateFormatter::MEDIUM, true)) ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -64,33 +64,33 @@ $attachments = $block->getAttachments();
         <?php if (!empty($items)): ?>
             <div class="box box-rma-items">
                 <strong class="box-title">
-                    <span><?= $block->escapeHtml(__('Items to Return')) ?></span>
+                    <span><?= $escaper->escapeHtml(__('Items to Return')) ?></span>
                 </strong>
                 <div class="box-content">
                     <div class="table-wrapper">
                         <table class="data table table-rma-items">
                             <thead>
                                 <tr>
-                                    <th scope="col"><?= $block->escapeHtml(__('Product')) ?></th>
-                                    <th scope="col"><?= $block->escapeHtml(__('SKU')) ?></th>
-                                    <th scope="col"><?= $block->escapeHtml(__('Quantity')) ?></th>
-                                    <th scope="col"><?= $block->escapeHtml(__('Condition')) ?></th>
+                                    <th scope="col"><?= $escaper->escapeHtml(__('Product')) ?></th>
+                                    <th scope="col"><?= $escaper->escapeHtml(__('SKU')) ?></th>
+                                    <th scope="col"><?= $escaper->escapeHtml(__('Quantity')) ?></th>
+                                    <th scope="col"><?= $escaper->escapeHtml(__('Condition')) ?></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($items as $item): ?>
                                     <tr>
-                                        <td data-th="<?= $block->escapeHtmlAttr(__('Product')) ?>">
-                                            <?= $block->escapeHtml($item['name']) ?>
+                                        <td data-th="<?= $escaper->escapeHtmlAttr(__('Product')) ?>">
+                                            <?= $escaper->escapeHtml($item['name']) ?>
                                         </td>
-                                        <td data-th="<?= $block->escapeHtmlAttr(__('SKU')) ?>">
-                                            <?= $block->escapeHtml($item['sku']) ?>
+                                        <td data-th="<?= $escaper->escapeHtmlAttr(__('SKU')) ?>">
+                                            <?= $escaper->escapeHtml($item['sku']) ?>
                                         </td>
-                                        <td data-th="<?= $block->escapeHtmlAttr(__('Quantity')) ?>">
+                                        <td data-th="<?= $escaper->escapeHtmlAttr(__('Quantity')) ?>">
                                             <?= (int)$item['qty_requested'] ?>
                                         </td>
-                                        <td data-th="<?= $block->escapeHtmlAttr(__('Condition')) ?>">
-                                            <?= $block->escapeHtml($item['condition_label']) ?>
+                                        <td data-th="<?= $escaper->escapeHtmlAttr(__('Condition')) ?>">
+                                            <?= $escaper->escapeHtml($item['condition_label']) ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -103,23 +103,23 @@ $attachments = $block->getAttachments();
 
         <div class="box box-rma-attachments" style="margin-top: 15px;">
             <strong class="box-title">
-                <span><?= $block->escapeHtml(__('Attachments')) ?></span>
+                <span><?= $escaper->escapeHtml(__('Attachments')) ?></span>
             </strong>
             <div class="box-content">
                 <ul id="rma-all-attachments" style="list-style: none; padding: 0; margin: 0;">
                     <?php if (empty($attachments)): ?>
                         <li class="rma-no-attachments" style="color: #999; font-style: italic; padding: 6px 0;">
-                            <?= $block->escapeHtml(__('No attachments yet.')) ?>
+                            <?= $escaper->escapeHtml(__('No attachments yet.')) ?>
                         </li>
                     <?php else: ?>
                         <?php foreach ($attachments as $att): ?>
                             <li data-attachment-id="<?= (int)$att['entity_id'] ?>" style="padding: 6px 0; border-bottom: 1px solid #eee;">
-                                <a href="<?= $block->escapeUrl($block->getDownloadUrl((int)$att['entity_id'])) ?>"
+                                <a href="<?= $escaper->escapeUrl($block->getDownloadUrl((int)$att['entity_id'])) ?>"
                                    style="color: #1979c3; text-decoration: none;">
-                                    &#128206; <?= $block->escapeHtml($att['file_name']) ?>
+                                    &#128206; <?= $escaper->escapeHtml($att['file_name']) ?>
                                 </a>
                                 <span style="color: #999; font-size: 12px;">
-                                    (<?= $block->escapeHtml($att['file_size_label']) ?>)
+                                    (<?= $escaper->escapeHtml($att['file_size_label']) ?>)
                                 </span>
                             </li>
                         <?php endforeach; ?>

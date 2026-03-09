@@ -105,7 +105,7 @@ class View extends Template
         $collection = $this->itemCollectionFactory->create();
         $collection->addFieldToFilter('rma_id', $rma->getEntityId());
 
-        return array_map([$this, 'buildItemData'], $collection->getItems());
+        return array_values(array_map([$this, 'buildItemData'], $collection->getItems()));
     }
 
     /**
@@ -118,10 +118,10 @@ class View extends Template
             return [];
         }
 
-        return array_map(
+        return array_values(array_map(
             [$this->attachmentService, 'toArray'],
             $this->attachmentService->getByRmaId((int)$rma->getEntityId())
-        );
+        ));
     }
 
     /**

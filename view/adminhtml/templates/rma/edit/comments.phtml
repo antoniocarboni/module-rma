@@ -24,27 +24,27 @@ $deleteUrl = $block->getDeleteUrl();
 ?>
 <div class="admin__fieldset" id="rma-attachments-section" style="margin-bottom: 20px;">
     <div class="admin__field-complex-title">
-        <span class="title"><?= $block->escapeHtml(__('Attachments')) ?></span>
+        <span class="title"><?= $escaper->escapeHtml(__('Attachments')) ?></span>
     </div>
     <div style="border: 1px solid #ccc; padding: 10px; background: #fafafa;">
         <ul id="rma-all-attachments" style="list-style: none; padding: 0; margin: 0;">
             <?php if (empty($attachments)): ?>
                 <li class="rma-no-attachments" style="color: #999; font-style: italic; padding: 4px 0;">
-                    <?= $block->escapeHtml(__('No attachments yet.')) ?>
+                    <?= $escaper->escapeHtml(__('No attachments yet.')) ?>
                 </li>
             <?php else: ?>
                 <?php foreach ($attachments as $att): ?>
                     <li data-attachment-id="<?= (int)$att['entity_id'] ?>" style="padding: 4px 0; border-bottom: 1px solid #eee;">
-                        <a href="<?= $block->escapeUrl($block->getAttachmentDownloadUrl((int)$att['entity_id'])) ?>"
+                        <a href="<?= $escaper->escapeUrl($block->getAttachmentDownloadUrl((int)$att['entity_id'])) ?>"
                            target="_blank" style="color: #1979c3; text-decoration: none;">
-                            &#128206; <?= $block->escapeHtml($att['file_name']) ?>
+                            &#128206; <?= $escaper->escapeHtml($att['file_name']) ?>
                         </a>
                         <span style="color: #999; font-size: 12px;">
-                            (<?= $block->escapeHtml($att['file_size_label']) ?>)
+                            (<?= $escaper->escapeHtml($att['file_size_label']) ?>)
                         </span>
                         <button type="button" class="rma-unified-attachment-delete" data-id="<?= (int)$att['entity_id'] ?>"
                                 style="color: #e22626; cursor: pointer; border: none; background: none; font-size: 11px; padding: 0; margin-left: 4px;">
-                            <?= $block->escapeHtml(__('Delete')) ?>
+                            <?= $escaper->escapeHtml(__('Delete')) ?>
                         </button>
                     </li>
                 <?php endforeach; ?>
@@ -55,36 +55,36 @@ $deleteUrl = $block->getDeleteUrl();
 
 <div class="admin__fieldset" id="rma-comments-section">
     <div class="admin__field-complex-title">
-        <span class="title"><?= $block->escapeHtml(__('Comments')) ?></span>
+        <span class="title"><?= $escaper->escapeHtml(__('Comments')) ?></span>
     </div>
 
     <div id="rma-comments-timeline" class="rma-comments-timeline" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; background: #fafafa;">
         <?php if (empty($comments)): ?>
-            <p class="rma-no-comments" style="color: #999; font-style: italic;"><?= $block->escapeHtml(__('No comments yet.')) ?></p>
+            <p class="rma-no-comments" style="color: #999; font-style: italic;"><?= $escaper->escapeHtml(__('No comments yet.')) ?></p>
         <?php else: ?>
             <?php foreach ($comments as $comment): ?>
-                <div class="rma-comment <?= $block->escapeHtmlAttr($comment['author_type']) ?>"
+                <div class="rma-comment <?= $escaper->escapeHtmlAttr($comment['author_type']) ?>"
                      data-comment-id="<?= (int)$comment['entity_id'] ?>"
                      style="margin-bottom: 10px; padding: 8px 12px; border-radius: 6px; <?= $comment['author_type'] === 'admin' ? 'background: #e8f0fe; margin-left: 20px;' : 'background: #fff; margin-right: 20px; border: 1px solid #ddd;' ?>">
                     <div style="font-size: 11px; color: #666; margin-bottom: 4px;">
-                        <strong><?= $block->escapeHtml($comment['author_name']) ?></strong>
-                        <span style="margin-left: 8px;"><?= $block->escapeHtml($comment['created_at']) ?></span>
+                        <strong><?= $escaper->escapeHtml($comment['author_name']) ?></strong>
+                        <span style="margin-left: 8px;"><?= $escaper->escapeHtml($comment['created_at']) ?></span>
                         <?php if (!$comment['is_visible_to_customer']): ?>
-                            <span style="margin-left: 8px; color: #e67700; font-weight: bold;"><?= $block->escapeHtml(__('Internal Note')) ?></span>
+                            <span style="margin-left: 8px; color: #e67700; font-weight: bold;"><?= $escaper->escapeHtml(__('Internal Note')) ?></span>
                         <?php endif; ?>
                     </div>
-                    <div style="white-space: pre-wrap;"><?= $block->escapeHtml($comment['comment']) ?></div>
+                    <div style="white-space: pre-wrap;"><?= $escaper->escapeHtml($comment['comment']) ?></div>
                     <?php if (!empty($comment['attachments'])): ?>
                         <div class="rma-comment-attachments" style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.1);">
                             <?php foreach ($comment['attachments'] as $att): ?>
                                 <div class="rma-attachment-item" style="font-size: 11px; margin-top: 3px;">
-                                    <a href="<?= $block->escapeUrl($downloadUrl . (str_contains($downloadUrl, '?') ? '&' : '?') . 'id=' . (int)$att['entity_id']) ?>"
+                                    <a href="<?= $escaper->escapeUrl($downloadUrl . (str_contains($downloadUrl, '?') ? '&' : '?') . 'id=' . (int)$att['entity_id']) ?>"
                                        target="_blank" style="color: #1979c3; text-decoration: none;">
-                                        &#128206; <?= $block->escapeHtml($att['file_name']) ?>
+                                        &#128206; <?= $escaper->escapeHtml($att['file_name']) ?>
                                     </a>
                                     <button type="button" class="rma-attachment-delete" data-id="<?= (int)$att['entity_id'] ?>"
                                             style="color: #e22626; cursor: pointer; border: none; background: none; font-size: 11px; padding: 0; margin-left: 4px;">
-                                        <?= $block->escapeHtml(__('Delete')) ?>
+                                        <?= $escaper->escapeHtml(__('Delete')) ?>
                                     </button>
                                 </div>
                             <?php endforeach; ?>
@@ -97,17 +97,21 @@ $deleteUrl = $block->getDeleteUrl();
 
     <div class="rma-comment-form" style="margin-bottom: 10px;">
         <textarea id="rma-comment-text" rows="3" style="width: 100%; box-sizing: border-box;"
-                  placeholder="<?= $block->escapeHtmlAttr(__('Type your comment...')) ?>"></textarea>
+                  placeholder="<?= $escaper->escapeHtmlAttr(__('Type your comment...')) ?>"></textarea>
         <div class="rma-comment-upload-widget" style="margin-top: 8px;"
              data-mage-init='{"MageOS_RMA/js/rma-file-upload": {
-                 "uploadUrl": "<?= $block->escapeUrl($block->getUploadUrl()) ?>",
-                 "allowedExtensions": "<?= $block->escapeHtmlAttr($block->getAllowedExtensions()) ?>",
+                 "uploadUrl": "<?= $escaper->escapeUrl($block->getUploadUrl()) ?>",
+                 "allowedExtensions": "<?= $escaper->escapeHtmlAttr($block->getAllowedExtensions()) ?>",
                  "maxFileSize": <?= (int)$block->getMaxFileSize() ?>,
                  "maxFiles": <?= (int)$block->getMaxFiles() ?>,
-                 "formKey": "<?= $block->escapeJs($block->getFormKey()) ?>"
+                 "formKey": "<?= $escaper->escapeJs($block->getFormKey()) ?>"
              }}'>
             <div class="rma-upload-dropzone" style="border: 2px dashed #ccc; border-radius: 4px; padding: 12px; text-align: center; cursor: pointer; background: #fafafa;">
-                <span style="color: #666; font-size: 12px;"><?= $block->escapeHtml(__('Drag & drop files here or click to browse')) ?></span>
+                <span style="color: #666; font-size: 12px;"><?= $escaper->escapeHtml(__('Drag & drop files here or click to browse')) ?></span>
+                <br/>
+                <span style="font-size: 11px; color: #999;">
+                    <?= $escaper->escapeHtml(__('Allowed: %1 | Max size: %2 MB | Max files: %3', $block->getAllowedExtensions(), $block->getMaxFileSize(), $block->getMaxFiles())) ?>
+                </span>
             </div>
             <input type="file" class="rma-upload-input" style="display: none;" multiple/>
             <div class="rma-upload-list" style="margin-top: 4px;"></div>
@@ -116,10 +120,10 @@ $deleteUrl = $block->getDeleteUrl();
         <div style="margin-top: 8px; display: flex; align-items: center; gap: 15px;">
             <label>
                 <input type="checkbox" id="rma-comment-visible" checked="checked"/>
-                <?= $block->escapeHtml(__('Visible to Customer')) ?>
+                <?= $escaper->escapeHtml(__('Visible to Customer')) ?>
             </label>
             <button type="button" id="rma-comment-submit" class="action-default scalable action-secondary">
-                <span><?= $block->escapeHtml(__('Add Comment')) ?></span>
+                <span><?= $escaper->escapeHtml(__('Add Comment')) ?></span>
             </button>
         </div>
     </div>
@@ -130,12 +134,12 @@ $deleteUrl = $block->getDeleteUrl();
     "#rma-comments-section": {
         "MageOS_RMA/js/rma-comments": {
             "rmaId": <?= (int)$rmaId ?>,
-            "saveUrl": "<?= $block->escapeJs($block->getSaveUrl()) ?>",
-            "loadListUrl": "<?= $block->escapeJs($block->getLoadListUrl()) ?>",
+            "saveUrl": "<?= $escaper->escapeJs($block->getSaveUrl()) ?>",
+            "loadListUrl": "<?= $escaper->escapeJs($block->getLoadListUrl()) ?>",
             "lastCommentId": <?= (int)$lastId ?>,
             "isAdmin": true,
-            "downloadUrl": "<?= $block->escapeJs($block->getDownloadUrl()) ?>",
-            "deleteUrl": "<?= $block->escapeJs($block->getDeleteUrl()) ?>"
+            "downloadUrl": "<?= $escaper->escapeJs($block->getDownloadUrl()) ?>",
+            "deleteUrl": "<?= $escaper->escapeJs($block->getDeleteUrl()) ?>"
         }
     }
 }

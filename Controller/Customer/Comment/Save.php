@@ -18,6 +18,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Exception;
 
 class Save implements HttpPostActionInterface
 {
@@ -69,23 +70,22 @@ class Save implements HttpPostActionInterface
 
         try {
             $comment = $this->createComment($rmaId, $commentText);
-        } catch (CouldNotSaveException) {
-            return $result->setData(['success' => false, 'message' => (string)__('Could not save comment.')]);
+
+            $responseData = ['success' => true];
+
+            try {
+                $attachmentsJson = (string)$this->request->getParam('attachments', '');
+                $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
+            } catch (LocalizedException $e) {
+                $responseData['attachment_error'] = $e->getMessage();
+            }
+
+            $responseData['comment'] = $this->commentFormatter->toArray($comment, true);
+
+            return $result->setData($responseData);
+        } catch (Exception $e) {
+            return $result->setData(['success' => false, 'message' => $e->getMessage()]);
         }
-
-        $responseData = [
-            'success' => true,
-            'comment' => $this->commentFormatter->toArray($comment, true),
-        ];
-
-        try {
-            $attachmentsJson = (string)$this->request->getParam('attachments', '');
-            $this->attachmentService->saveFromJson($attachmentsJson, $rmaId, (int)$comment->getEntityId());
-        } catch (LocalizedException $e) {
-            $responseData['attachment_error'] = $e->getMessage();
-        }
-
-        return $result->setData($responseData);
     }
 
     /**

@@ -8,7 +8,6 @@ use MageOS\RMA\Model\ResourceModel\RMA\Collection;
 use MageOS\RMA\Model\ResourceModel\RMA\CollectionFactory;
 use MageOS\RMA\Service\LabelResolver;
 use Magento\Customer\Model\Session as CustomerSession;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Sales\Api\OrderRepositoryInterface;

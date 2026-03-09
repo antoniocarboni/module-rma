@@ -104,6 +104,7 @@ class OrderEligibility
      * @param int $customerId
      * @param int $storeId
      * @return Collection
+     * @throws NoSuchEntityException
      */
     public function getCustomerEligibleOrders(int $customerId, int $storeId): Collection
     {

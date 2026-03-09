@@ -16,6 +16,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Stdlib\Cookie\CookieSizeLimitReachedException;
 use Magento\Framework\Stdlib\Cookie\FailureToSendException;
+use Magento\Framework\Exception\LocalizedException;
 
 class Create implements HttpGetActionInterface
 {
@@ -41,7 +42,7 @@ class Create implements HttpGetActionInterface
      * @return ResultInterface
      * @throws InputException
      * @throws CookieSizeLimitReachedException
-     * @throws FailureToSendException
+     * @throws FailureToSendException|LocalizedException
      */
     public function execute(): ResultInterface
     {

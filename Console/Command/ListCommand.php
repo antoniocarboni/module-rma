@@ -166,7 +166,6 @@ class ListCommand extends Command
         $table = new Table($output);
         $table->setHeaders(['Increment ID', 'Order #', 'Customer Name', 'Customer Email', 'Status', 'Created At']);
 
-        /** @var RMAInterface $rma */
         foreach ($results->getItems() as $rma) {
             $orderIncrementId = $this->getOrderIncrementId($rma->getOrderId());
             $statusLabel = $statusLabels[(int)$rma->getStatusId()] ?? 'Unknown';

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MageOS\RMA\Service;
 
+use Magento\Framework\Exception\FileSystemException;
 use MageOS\RMA\Api\AttachmentRepositoryInterface;
 use MageOS\RMA\Api\Data\AttachmentInterface;
 use MageOS\RMA\Api\Data\AttachmentInterfaceFactory;
@@ -38,6 +39,7 @@ class AttachmentService
      * @param AttachmentCollectionFactory $attachmentCollectionFactory
      * @param Mime $mime
      * @param JsonSerializer $jsonSerializer
+     * @throws FileSystemException
      */
     public function __construct(
         Filesystem $filesystem,
