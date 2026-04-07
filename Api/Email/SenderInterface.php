@@ -6,6 +6,9 @@ namespace MageOS\RMA\Api\Email;
 
 use MageOS\RMA\Api\Data\RMAInterface;
 
+/**
+ * @api
+ */
 interface SenderInterface
 {
     /**

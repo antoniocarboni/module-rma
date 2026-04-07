@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MageOS\RMA\Api\Data;
 
+/**
+ * @api
+ */
 interface CommentInterface
 {
     const string ENTITY_ID = 'entity_id';

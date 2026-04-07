@@ -6,6 +6,9 @@ namespace MageOS\RMA\Api\Data;
 
 use Magento\Framework\Api\SearchResultsInterface;
 
+/**
+ * @api
+ */
 interface ReasonSearchResultsInterface extends SearchResultsInterface
 {
     /**
