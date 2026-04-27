@@ -39,12 +39,14 @@ class StatusActions extends Column
             return $dataSource;
         }
 
+        $columnName = (string) $this->getData('name');
+
         foreach ($dataSource['data']['items'] as &$item) {
             if (!isset($item['entity_id'])) {
                 continue;
             }
 
-            $item[$this->getData('name')] = [
+            $item[$columnName] = [
                 'edit' => [
                     'href' => $this->urlBuilder->getUrl('rma/status/edit', [
                         'entity_id' => $item['entity_id'],
@@ -54,7 +56,7 @@ class StatusActions extends Column
             ];
 
             if (!StatusCodes::isProtected($item['code'] ?? '')) {
-                $item[$this->getData('name')]['delete'] = [
+                $item[$columnName]['delete'] = [
                     'href' => $this->urlBuilder->getUrl('rma/status/delete', [
                         'entity_id' => $item['entity_id'],
                     ]),

@@ -34,7 +34,7 @@ $rmaCollection = $block->getRmaCollection();
                                     <?= $escaper->escapeHtml($rma->getIncrementId()) ?>
                                 </td>
                                 <td data-th="<?= $escaper->escapeHtmlAttr(__('Order #')) ?>" class="col order">
-                                    #<?= $escaper->escapeHtml($block->getOrderIncrementId((int)$rma->getOrderId())) ?>
+                                    #<?= $escaper->escapeHtml($block->getOrderIncrementId($rma)) ?>
                                 </td>
                                 <td data-th="<?= $escaper->escapeHtmlAttr(__('Status')) ?>" class="col status">
                                     <?= $escaper->escapeHtml($block->getStatusLabel((int)$rma->getStatusId())) ?>

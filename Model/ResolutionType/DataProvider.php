@@ -67,7 +67,7 @@ class DataProvider extends ModifierPoolDataProvider
         if (!empty($data)) {
             $resolutionType = $this->collection->getNewEmptyItem();
             $resolutionType->setData($data);
-            $this->loadedData[$resolutionType->getId()] = $resolutionType->getData();
+            $this->loadedData[(int) $resolutionType->getId()] = $resolutionType->getData();
             $this->dataPersistor->clear('rma_resolution_type');
         }
 

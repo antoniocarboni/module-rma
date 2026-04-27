@@ -80,7 +80,9 @@ class RMARepository implements RMARepositoryInterface
     /**
      * @param RMAInterface $rma
      * @return RMAInterface
-     * @throws CouldNotSaveException|LocalizedException
+     * @throws CouldNotSaveException
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     public function save(RMAInterface $rma): RMAInterface
     {
@@ -88,12 +90,7 @@ class RMARepository implements RMARepositoryInterface
         $oldStatusId = null;
 
         if (!$isNew) {
-            $oldStatusId = (int) $this->resourceModel->getConnection()->fetchOne(
-                $this->resourceModel->getConnection()
-                    ->select()
-                    ->from($this->resourceModel->getMainTable(), [RMAInterface::STATUS_ID])
-                    ->where('entity_id = ?', $rma->getEntityId())
-            );
+            $oldStatusId = (int) $this->get((int) $rma->getEntityId())->getStatusId();
         }
 
         try {

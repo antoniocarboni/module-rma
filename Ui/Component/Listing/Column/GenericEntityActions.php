@@ -49,7 +49,7 @@ class GenericEntityActions extends Column
                 continue;
             }
 
-            $item[$this->getData('name')] = [
+            $item[(string) $this->getData('name')] = [
                 'edit' => [
                     'href' => $this->urlBuilder->getUrl($this->editUrlPath, [
                         'entity_id' => $item['entity_id'],

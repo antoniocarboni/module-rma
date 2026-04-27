@@ -108,7 +108,7 @@ class ReturnDataProvider
      */
     protected function buildItemData(object $item, array $orderItemsMap): array
     {
-        $orderItem = $orderItemsMap[$item->getOrderItemId()] ?? null;
+        $orderItem = $orderItemsMap[(int) $item->getOrderItemId()] ?? null;
 
         return [
             'item_id' => $item->getEntityId(),

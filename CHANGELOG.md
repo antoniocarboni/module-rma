@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.2] - 2026-04-27
+
+### Fixed
+- **[Security]** Allowed file extensions config switched from free-form comma list to multiselect with server-side mimetype validation in `AttachmentService` (#30)
+- **[Security]** Trailing slash gap on absolute attachment paths in `AttachmentService` allowed potential path-traversal edge cases (#32)
+- **[Code Quality]** Raw SQL `getConnection()->fetchOne()` in `RMARepository::save()` for old status detection replaced with repository pattern `$this->get()->getStatusId()` (#22)
+- **[Code Quality]** N+1 query in customer RMA history — `ListRma::getOrderIncrementId()` calling `orderRepository->get()` per row replaced with single LEFT JOIN on `sales_order` via new opt-in `Collection::joinSalesOrder()` method (#24)
+- **[Compatibility]** PHP 8.5: nullable getter return values cast to `(int)`/`(string)` before use as array keys in 5 admin DataProviders (`RMA`, `Status`, `Reason`, `ResolutionType`, `ItemCondition`), 3 UI listing columns (`RmaActions`, `StatusActions`, `GenericEntityActions`), and `ReturnDataProvider` GraphQL lookup — prevents null-as-array-key warnings on PHP 8.5+
+
+### Added
+- `Model/Config/Source/AllowedExtensions.php` source model backing the new multiselect config (#30)
+- Unit test coverage for `AbstractRepository`, `RMARepository`, `StatusResolver`, `OrderEligibility`, `RmaSubmitService`, `AttachmentService`, attachment upload, and customer attachment download (#32)
+
 ## [2.0.1] - 2026-04-09
 
 ### Fixed

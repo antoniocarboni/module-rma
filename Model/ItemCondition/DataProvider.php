@@ -67,7 +67,7 @@ class DataProvider extends ModifierPoolDataProvider
         if (!empty($data)) {
             $itemCondition = $this->collection->getNewEmptyItem();
             $itemCondition->setData($data);
-            $this->loadedData[$itemCondition->getId()] = $itemCondition->getData();
+            $this->loadedData[(int) $itemCondition->getId()] = $itemCondition->getData();
             $this->dataPersistor->clear('rma_item_condition');
         }
 

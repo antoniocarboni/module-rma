@@ -59,7 +59,7 @@ class DataProvider extends AbstractDataProvider
         if (!empty($persistedData)) {
             $rma = $this->collection->getNewEmptyItem();
             $rma->setData($persistedData);
-            $this->loadedData[$rma->getId()] = $rma->getData();
+            $this->loadedData[(int) $rma->getId()] = $rma->getData();
             $this->dataPersistor->clear('rma_entity');
         }
 

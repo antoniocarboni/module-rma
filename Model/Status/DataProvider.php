@@ -71,7 +71,7 @@ class DataProvider extends ModifierPoolDataProvider
             $status->setData($data);
             $statusData = $status->getData();
             $statusData['is_system'] = StatusCodes::isProtected($statusData['code'] ?? '');
-            $this->loadedData[$status->getId()] = $statusData;
+            $this->loadedData[(int) $status->getId()] = $statusData;
             $this->dataPersistor->clear('rma_status');
         }
 

@@ -67,7 +67,7 @@ class DataProvider extends ModifierPoolDataProvider
         if (!empty($data)) {
             $reason = $this->collection->getNewEmptyItem();
             $reason->setData($data);
-            $this->loadedData[$reason->getId()] = $reason->getData();
+            $this->loadedData[(int) $reason->getId()] = $reason->getData();
             $this->dataPersistor->clear('rma_reason');
         }
 

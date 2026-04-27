@@ -8,11 +8,10 @@ use MageOS\RMA\Model\ResourceModel\RMA\Collection;
 use MageOS\RMA\Model\ResourceModel\RMA\CollectionFactory;
 use MageOS\RMA\Service\LabelResolver;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\DataObject;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Theme\Block\Html\Pager;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 class ListRma extends Template
 {
@@ -23,7 +22,6 @@ class ListRma extends Template
      * @param CollectionFactory $collectionFactory
      * @param CustomerSession $customerSession
      * @param LabelResolver $labelResolver
-     * @param OrderRepositoryInterface $orderRepository
      * @param array $data
      */
     public function __construct(
@@ -31,7 +29,6 @@ class ListRma extends Template
         protected readonly CollectionFactory $collectionFactory,
         protected readonly CustomerSession $customerSession,
         protected readonly LabelResolver $labelResolver,
-        protected readonly OrderRepositoryInterface $orderRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -50,6 +47,7 @@ class ListRma extends Template
 
         if ($this->rmaCollection === null) {
             $this->rmaCollection = $this->collectionFactory->create();
+            $this->rmaCollection->joinSalesOrder();
             $this->rmaCollection->addFieldToFilter('customer_id', $customerId);
             $this->rmaCollection->setOrder('created_at', 'desc');
         }
@@ -110,15 +108,11 @@ class ListRma extends Template
     }
 
     /**
-     * @param int $orderId
+     * @param DataObject $rma
      * @return string
      */
-    public function getOrderIncrementId(int $orderId): string
+    public function getOrderIncrementId(DataObject $rma): string
     {
-        try {
-            return $this->orderRepository->get($orderId)->getIncrementId();
-        } catch (NoSuchEntityException) {
-            return (string)$orderId;
-        }
+        return (string)($rma->getData(Collection::ORDER_INCREMENT_ID_COLUMN) ?: $rma->getOrderId());
     }
 }

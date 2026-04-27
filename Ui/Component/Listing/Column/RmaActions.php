@@ -43,7 +43,7 @@ class RmaActions extends Column
                 continue;
             }
 
-            $item[$this->getData('name')] = [
+            $item[(string) $this->getData('name')] = [
                 'edit' => [
                     'href' => $this->urlBuilder->getUrl('rma/rma/edit', [
                         'entity_id' => $item['entity_id'],
