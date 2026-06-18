@@ -16,6 +16,10 @@
                 <max_file_size>10</max_file_size>
                 <max_files>5</max_files>
             </attachments>
+            <restrictions>
+                <restricted_customer_groups></restricted_customer_groups>
+                <product_returnable_attribute></product_returnable_attribute>
+            </restrictions>
             <email>
                 <sender_identity>general</sender_identity>
                 <customer_new_template>rma_email_customer_new_template</customer_new_template>

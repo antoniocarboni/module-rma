@@ -36,6 +36,19 @@
                     <can_be_empty>0</can_be_empty>
                 </field>
             </group>
+            <group id="restrictions" translate="label" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Restrictions</label>
+                <field id="restricted_customer_groups" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Restricted Customer Groups</label>
+                    <source_model>MageOS\RMA\Model\Config\Source\CustomerGroup</source_model>
+                    <comment>Customer groups that are not allowed to submit return requests. Leave empty to allow all groups.</comment>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="product_returnable_attribute" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product Returnable Attribute Code</label>
+                    <comment>Attribute code of a Yes/No product attribute. When set, products with this attribute equal to "No" will not be eligible for return. Leave empty to disable this restriction.</comment>
+                </field>
+            </group>
             <group id="email" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Email Notifications</label>
                 <field id="sender_identity" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

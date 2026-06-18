@@ -61,6 +61,13 @@ class Create extends Template
             return [];
         }
 
+        if (!$this->orderEligibility->isCustomerGroupAllowed(
+            (int)$this->customerSession->getCustomerGroupId(),
+            $storeId
+        )) {
+            return [];
+        }
+
         $orders = [];
         $collection = $this->orderEligibility->getCustomerEligibleOrders($customerId, $storeId);
 

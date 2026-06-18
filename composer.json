@@ -7,6 +7,8 @@
         "magento/module-sales": "*",
         "magento/module-webapi": "*",
         "magento/module-graph-ql": "*",
+        "magento/module-catalog": "*",
+        "magento/module-customer": "*",
         "php": ">=8.3"
     },
     "authors": [

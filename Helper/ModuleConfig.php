@@ -16,6 +16,7 @@ class ModuleConfig
     const string GROUP_POLICY = self::SECTION . 'policy/';
     const string GROUP_EMAIL = self::SECTION . 'email/';
     const string GROUP_ATTACHMENTS = self::SECTION . 'attachments/';
+    const string GROUP_RESTRICTIONS = self::SECTION . 'restrictions/';
 
     const string XML_PATH_ENABLED = self::GROUP_GENERAL . 'enabled';
     const string XML_PATH_INCREMENT_ID_PREFIX = self::GROUP_GENERAL . 'increment_id_prefix';
@@ -33,6 +34,9 @@ class ModuleConfig
     const string XML_PATH_ALLOWED_EXTENSIONS = self::GROUP_ATTACHMENTS . 'allowed_extensions';
     const string XML_PATH_MAX_FILE_SIZE = self::GROUP_ATTACHMENTS . 'max_file_size';
     const string XML_PATH_MAX_FILES = self::GROUP_ATTACHMENTS . 'max_files';
+
+    const string XML_PATH_RESTRICTED_CUSTOMER_GROUPS = self::GROUP_RESTRICTIONS . 'restricted_customer_groups';
+    const string XML_PATH_PRODUCT_RETURNABLE_ATTRIBUTE = self::GROUP_RESTRICTIONS . 'product_returnable_attribute';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
@@ -222,5 +226,45 @@ class ModuleConfig
     public function getMaxAttachmentFiles(): int
     {
         return max(1, (int)$this->scopeConfig->getValue(self::XML_PATH_MAX_FILES));
+    }
+
+    /**
+     * Returns the IDs of customer groups that are not allowed to submit RMA requests.
+     * An empty array means no groups are restricted (all groups are allowed).
+     *
+     * @param int $storeId
+     * @return int[]
+     */
+    public function getRestrictedCustomerGroups(int $storeId = 0): array
+    {
+        $value = (string)$this->scopeConfig->getValue(
+            self::XML_PATH_RESTRICTED_CUSTOMER_GROUPS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if ($value === '') {
+            return [];
+        }
+
+        return array_map('intval', explode(',', $value));
+    }
+
+    /**
+     * Returns the product attribute code used to determine if a product is returnable.
+     * An empty string means the restriction is disabled.
+     *
+     * @param int $storeId
+     * @return string
+     */
+    public function getProductReturnableAttribute(int $storeId = 0): string
+    {
+        return trim(
+            (string)$this->scopeConfig->getValue(
+                self::XML_PATH_PRODUCT_RETURNABLE_ATTRIBUTE,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            )
+        );
     }
 }
