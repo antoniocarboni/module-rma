@@ -7,10 +7,13 @@ namespace MageOS\RMA\Test\Unit\Service;
 use MageOS\RMA\Helper\ModuleConfig;
 use MageOS\RMA\Model\ResourceModel\Item\CollectionFactory as RmaItemCollectionFactory;
 use MageOS\RMA\Service\OrderEligibility;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order\Address as OrderAddress;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -24,6 +27,7 @@ class OrderEligibilityTest extends TestCase
     private OrderRepositoryInterface&MockObject $orderRepository;
     private TimezoneInterface&MockObject $timezone;
     private StoreManagerInterface&MockObject $storeManager;
+    private ProductRepositoryInterface&MockObject $productRepository;
 
     protected function setUp(): void
     {
@@ -33,6 +37,12 @@ class OrderEligibilityTest extends TestCase
         $this->orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $this->timezone = $this->createMock(TimezoneInterface::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
+        $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
+
+        // Safe defaults: disable new restrictions so existing tests are unaffected
+        $this->moduleConfig->method('getRestrictedBillingFields')->willReturn([]);
+        $this->moduleConfig->method('getProductDisableAttribute')->willReturn('');
+        $this->moduleConfig->method('getProductReturnableAttribute')->willReturn('');
     }
 
     private function createService(array $stubbedMethods = []): OrderEligibility
@@ -44,7 +54,8 @@ class OrderEligibilityTest extends TestCase
                 $this->orderCollectionFactory,
                 $this->orderRepository,
                 $this->timezone,
-                $this->storeManager
+                $this->storeManager,
+                $this->productRepository
             );
         }
 
@@ -56,6 +67,7 @@ class OrderEligibilityTest extends TestCase
                 $this->orderRepository,
                 $this->timezone,
                 $this->storeManager,
+                $this->productRepository,
             ])
             ->onlyMethods($stubbedMethods)
             ->getMock();
@@ -70,6 +82,27 @@ class OrderEligibilityTest extends TestCase
         $order->method('getEntityId')->willReturn(100);
 
         return $order;
+    }
+
+    private function createOrderItem(
+        ?int $parentItemId,
+        string $productType,
+        int $itemId,
+        int $qtyOrdered,
+        string $name = 'Product',
+        string $sku = 'SKU-001',
+        int $productId = 0
+    ): OrderItemInterface&MockObject {
+        $item = $this->createMock(OrderItemInterface::class);
+        $item->method('getParentItemId')->willReturn($parentItemId);
+        $item->method('getProductType')->willReturn($productType);
+        $item->method('getItemId')->willReturn($itemId);
+        $item->method('getQtyOrdered')->willReturn($qtyOrdered);
+        $item->method('getName')->willReturn($name);
+        $item->method('getSku')->willReturn($sku);
+        $item->method('getProductId')->willReturn($productId);
+
+        return $item;
     }
 
     // -------------------------------------------------------------------------
@@ -127,6 +160,7 @@ class OrderEligibilityTest extends TestCase
         $this->moduleConfig->method('isEnabled')->willReturn(true);
         $this->moduleConfig->method('getAllowedOrderStatuses')->willReturn(['complete']);
         $this->moduleConfig->method('getReturnPeriod')->willReturn(0);
+        $this->moduleConfig->method('getRestrictedCustomerGroups')->willReturn([]);
 
         $order = $this->createOrder(status: 'complete');
 
@@ -155,32 +189,83 @@ class OrderEligibilityTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // getEligibleItems
+    // isBillingAllowed (via isOrderEligible)
     // -------------------------------------------------------------------------
 
-    private function createOrderItem(
-        ?int $parentItemId,
-        string $productType,
-        int $itemId,
-        int $qtyOrdered,
-        string $name = 'Product',
-        string $sku = 'SKU-001'
-    ): OrderItemInterface&MockObject {
-        $item = $this->createMock(OrderItemInterface::class);
-        $item->method('getParentItemId')->willReturn($parentItemId);
-        $item->method('getProductType')->willReturn($productType);
-        $item->method('getItemId')->willReturn($itemId);
-        $item->method('getQtyOrdered')->willReturn($qtyOrdered);
-        $item->method('getName')->willReturn($name);
-        $item->method('getSku')->willReturn($sku);
+    public function testIsOrderEligibleReturnsFalseWhenRestrictedBillingFieldIsFilled(): void
+    {
+        // Fresh mock to avoid setUp stub shadowing
+        $this->moduleConfig = $this->createMock(ModuleConfig::class);
+        $this->moduleConfig->method('isEnabled')->willReturn(true);
+        $this->moduleConfig->method('getAllowedOrderStatuses')->willReturn(['complete']);
+        $this->moduleConfig->method('getReturnPeriod')->willReturn(0);
+        $this->moduleConfig->method('getRestrictedCustomerGroups')->willReturn([]);
+        $this->moduleConfig->method('getRestrictedBillingFields')->willReturn(['vat_id']);
+        $this->moduleConfig->method('getProductDisableAttribute')->willReturn('');
+        $this->moduleConfig->method('getProductReturnableAttribute')->willReturn('');
 
-        return $item;
+        $billing = $this->createMock(OrderAddress::class);
+        $billing->method('getData')->with('vat_id')->willReturn('IT12345678901');
+
+        $order = $this->createOrder(status: 'complete');
+        $order->method('getBillingAddress')->willReturn($billing);
+
+        /** @var OrderEligibility&MockObject $service */
+        $service = $this->createService(['getEligibleItems']);
+
+        $this->assertFalse($service->isOrderEligible($order));
     }
+
+    public function testIsOrderEligibleReturnsTrueWhenRestrictedBillingFieldIsEmpty(): void
+    {
+        // Fresh mock to avoid setUp stub shadowing
+        $this->moduleConfig = $this->createMock(ModuleConfig::class);
+        $this->moduleConfig->method('isEnabled')->willReturn(true);
+        $this->moduleConfig->method('getAllowedOrderStatuses')->willReturn(['complete']);
+        $this->moduleConfig->method('getReturnPeriod')->willReturn(0);
+        $this->moduleConfig->method('getRestrictedCustomerGroups')->willReturn([]);
+        $this->moduleConfig->method('getRestrictedBillingFields')->willReturn(['vat_id']);
+        $this->moduleConfig->method('getProductDisableAttribute')->willReturn('');
+        $this->moduleConfig->method('getProductReturnableAttribute')->willReturn('');
+
+        $billing = $this->createMock(OrderAddress::class);
+        $billing->method('getData')->with('vat_id')->willReturn('');
+
+        $order = $this->createOrder(status: 'complete');
+        $order->method('getBillingAddress')->willReturn($billing);
+
+        /** @var OrderEligibility&MockObject $service */
+        $service = $this->createService(['getEligibleItems']);
+        $service->method('getEligibleItems')->willReturn([['order_item_id' => 1]]);
+
+        $this->assertTrue($service->isOrderEligible($order));
+    }
+
+    public function testIsOrderEligibleReturnsTrueWhenNoBillingFieldsConfigured(): void
+    {
+        $this->moduleConfig->method('isEnabled')->willReturn(true);
+        $this->moduleConfig->method('getAllowedOrderStatuses')->willReturn(['complete']);
+        $this->moduleConfig->method('getReturnPeriod')->willReturn(0);
+        $this->moduleConfig->method('getRestrictedCustomerGroups')->willReturn([]);
+
+        $order = $this->createOrder(status: 'complete');
+
+        /** @var OrderEligibility&MockObject $service */
+        $service = $this->createService(['getEligibleItems']);
+        $service->method('getEligibleItems')->willReturn([['order_item_id' => 1]]);
+
+        $this->assertTrue($service->isOrderEligible($order));
+    }
+
+    // -------------------------------------------------------------------------
+    // getEligibleItems
+    // -------------------------------------------------------------------------
 
     public function testGetEligibleItemsSkipsChildItems(): void
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: 5, productType: 'simple', itemId: 10, qtyOrdered: 1),
         ]);
@@ -196,6 +281,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'virtual', itemId: 10, qtyOrdered: 1),
         ]);
@@ -211,6 +297,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'downloadable', itemId: 10, qtyOrdered: 1),
         ]);
@@ -226,6 +313,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 10, qtyOrdered: 2),
         ]);
@@ -241,6 +329,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 10, qtyOrdered: 3, name: 'Shirt', sku: 'SHIRT-L'),
         ]);
@@ -260,6 +349,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 10, qtyOrdered: 2, name: 'Blue Hat', sku: 'HAT-BL'),
         ]);
@@ -285,6 +375,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'configurable', itemId: 20, qtyOrdered: 1, name: 'T-Shirt', sku: 'TSHIRT-M'),
         ]);
@@ -296,7 +387,6 @@ class OrderEligibilityTest extends TestCase
         $result = $service->getEligibleItems($order);
 
         $this->assertCount(1, $result);
-        $this->assertSame('configurable', 'configurable');
         $this->assertSame(20, $result[0]['order_item_id']);
     }
 
@@ -304,6 +394,7 @@ class OrderEligibilityTest extends TestCase
     {
         $order = $this->createMock(OrderInterface::class);
         $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
         $order->method('getItems')->willReturn([
             $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 1, qtyOrdered: 2, name: 'Book', sku: 'BOOK-1'),
             $this->createOrderItem(parentItemId: null, productType: 'virtual', itemId: 2, qtyOrdered: 1),
@@ -321,5 +412,133 @@ class OrderEligibilityTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertSame(1, $result[0]['order_item_id']);
         $this->assertSame(5, $result[1]['order_item_id']);
+    }
+
+    // -------------------------------------------------------------------------
+    // getEligibleItems — product_disable_attribute
+    // -------------------------------------------------------------------------
+
+    public function testGetEligibleItemsSkipsItemsWithRmaDisabled(): void
+    {
+        // Fresh mock: setUp defaults would shadow willReturn('rma_disable')
+        $this->moduleConfig = $this->createMock(ModuleConfig::class);
+        $this->moduleConfig->method('getProductReturnableAttribute')->willReturn('');
+        $this->moduleConfig->method('getProductDisableAttribute')->willReturn('rma_disable');
+        $this->moduleConfig->method('getRestrictedBillingFields')->willReturn([]);
+
+        $product = $this->createMock(Product::class);
+        $product->method('getData')->with('rma_disable')->willReturn(1);
+        $this->productRepository->method('getById')->willReturn($product);
+
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 10, qtyOrdered: 1, productId: 99),
+        ]);
+
+        /** @var OrderEligibility&MockObject $service */
+        $service = $this->createService(['getAlreadyRequestedQty']);
+        $service->method('getAlreadyRequestedQty')->willReturn([]);
+
+        $this->assertSame([], $service->getEligibleItems($order));
+    }
+
+    public function testGetEligibleItemsIncludesItemsWithRmaNotDisabled(): void
+    {
+        // Fresh mock
+        $this->moduleConfig = $this->createMock(ModuleConfig::class);
+        $this->moduleConfig->method('getProductReturnableAttribute')->willReturn('');
+        $this->moduleConfig->method('getProductDisableAttribute')->willReturn('rma_disable');
+        $this->moduleConfig->method('getRestrictedBillingFields')->willReturn([]);
+
+        $product = $this->createMock(Product::class);
+        $product->method('getData')->with('rma_disable')->willReturn(0);
+        $this->productRepository->method('getById')->willReturn($product);
+
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getEntityId')->willReturn(1);
+        $order->method('getStoreId')->willReturn(1);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 10, qtyOrdered: 1, name: 'Book', sku: 'BOOK-1', productId: 99),
+        ]);
+
+        /** @var OrderEligibility&MockObject $service */
+        $service = $this->createService(['getAlreadyRequestedQty']);
+        $service->method('getAlreadyRequestedQty')->willReturn([]);
+
+        $result = $service->getEligibleItems($order);
+        $this->assertCount(1, $result);
+        $this->assertSame(10, $result[0]['order_item_id']);
+    }
+
+    // -------------------------------------------------------------------------
+    // areAllItemsRmaDisabled
+    // -------------------------------------------------------------------------
+
+    public function testAreAllItemsRmaDisabledReturnsTrueWhenAllDisabled(): void
+    {
+        $product = $this->createMock(Product::class);
+        $product->method('getData')->with('rma_disable')->willReturn(1);
+        $this->productRepository->method('getById')->willReturn($product);
+
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 1, qtyOrdered: 1, productId: 10),
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 2, qtyOrdered: 1, productId: 11),
+        ]);
+
+        $service = $this->createService();
+        $this->assertTrue($service->areAllItemsRmaDisabled($order, 'rma_disable'));
+    }
+
+    public function testAreAllItemsRmaDisabledReturnsFalseWhenOneIsNotDisabled(): void
+    {
+        $productDisabled = $this->createMock(Product::class);
+        $productDisabled->method('getData')->with('rma_disable')->willReturn(1);
+
+        $productEnabled = $this->createMock(Product::class);
+        $productEnabled->method('getData')->with('rma_disable')->willReturn(0);
+
+        $productMap = [10 => $productDisabled, 11 => $productEnabled];
+        $this->productRepository->method('getById')
+            ->willReturnCallback(fn($id) => $productMap[$id]);
+
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 1, qtyOrdered: 1, productId: 10),
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 2, qtyOrdered: 1, productId: 11),
+        ]);
+
+        $service = $this->createService();
+        $this->assertFalse($service->areAllItemsRmaDisabled($order, 'rma_disable'));
+    }
+
+    public function testAreAllItemsRmaDisabledReturnsFalseWhenNoCandidates(): void
+    {
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: null, productType: 'virtual', itemId: 1, qtyOrdered: 1),
+        ]);
+
+        $service = $this->createService();
+        $this->assertFalse($service->areAllItemsRmaDisabled($order, 'rma_disable'));
+    }
+
+    public function testAreAllItemsRmaDisabledSkipsChildAndVirtualItems(): void
+    {
+        $product = $this->createMock(Product::class);
+        $product->method('getData')->with('rma_disable')->willReturn(1);
+        $this->productRepository->method('getById')->willReturn($product);
+
+        $order = $this->createMock(OrderInterface::class);
+        $order->method('getItems')->willReturn([
+            $this->createOrderItem(parentItemId: 5,    productType: 'simple', itemId: 1, qtyOrdered: 1, productId: 10),  // child → skipped
+            $this->createOrderItem(parentItemId: null, productType: 'virtual', itemId: 2, qtyOrdered: 1),                // virtual → skipped
+            $this->createOrderItem(parentItemId: null, productType: 'simple', itemId: 3, qtyOrdered: 1, productId: 11), // disabled
+        ]);
+
+        $service = $this->createService();
+        $this->assertTrue($service->areAllItemsRmaDisabled($order, 'rma_disable'));
     }
 }
