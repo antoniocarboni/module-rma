@@ -37,6 +37,8 @@ class ModuleConfig
 
     const string XML_PATH_RESTRICTED_CUSTOMER_GROUPS = self::GROUP_RESTRICTIONS . 'restricted_customer_groups';
     const string XML_PATH_PRODUCT_RETURNABLE_ATTRIBUTE = self::GROUP_RESTRICTIONS . 'product_returnable_attribute';
+    const string XML_PATH_PRODUCT_DISABLE_ATTRIBUTE = self::GROUP_RESTRICTIONS . 'product_disable_attribute';
+    const string XML_PATH_RESTRICTED_BILLING_FIELDS = self::GROUP_RESTRICTIONS . 'restricted_billing_fields';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
@@ -266,5 +268,42 @@ class ModuleConfig
                 $storeId
             )
         );
+    }
+
+    /**
+     * Returns the product attribute code used to disable RMA for a product.
+     * When set to "Yes" on a product, that product cannot be returned.
+     * An empty string means the restriction is disabled.
+     *
+     * @param int $storeId
+     * @return string
+     */
+    public function getProductDisableAttribute(int $storeId = 0): string
+    {
+        return trim(
+            (string)$this->scopeConfig->getValue(
+                self::XML_PATH_PRODUCT_DISABLE_ATTRIBUTE,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            )
+        );
+    }
+
+    /**
+     * Returns the billing address fields that block RMA when filled.
+     * An empty array means this restriction is disabled.
+     *
+     * @param int $storeId
+     * @return string[]
+     */
+    public function getRestrictedBillingFields(int $storeId = 0): array
+    {
+        $value = (string)$this->scopeConfig->getValue(
+            self::XML_PATH_RESTRICTED_BILLING_FIELDS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        return $value !== '' ? array_map('trim', explode(',', $value)) : [];
     }
 }

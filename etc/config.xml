@@ -19,6 +19,8 @@
             <restrictions>
                 <restricted_customer_groups></restricted_customer_groups>
                 <product_returnable_attribute></product_returnable_attribute>
+                <product_disable_attribute>rma_disable</product_disable_attribute>
+                <restricted_billing_fields>vat_id</restricted_billing_fields>
             </restrictions>
             <email>
                 <sender_identity>general</sender_identity>

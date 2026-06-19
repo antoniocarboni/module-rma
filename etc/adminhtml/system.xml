@@ -44,9 +44,21 @@
                     <comment>Customer groups that are not allowed to submit return requests. Leave empty to allow all groups.</comment>
                     <can_be_empty>1</can_be_empty>
                 </field>
-                <field id="product_returnable_attribute" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="product_returnable_attribute" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Product Returnable Attribute Code</label>
-                    <comment>Attribute code of a Yes/No product attribute. When set, products with this attribute equal to "No" will not be eligible for return. Leave empty to disable this restriction.</comment>
+                    <source_model>MageOS\RMA\Model\Config\Source\ProductAttributes</source_model>
+                    <comment>Yes/No product attribute. When set, products with this attribute equal to "No" will not be eligible for return. Leave empty to disable this restriction.</comment>
+                </field>
+                <field id="product_disable_attribute" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product RMA Disable Attribute Code</label>
+                    <source_model>MageOS\RMA\Model\Config\Source\ProductAttributes</source_model>
+                    <comment>Yes/No product attribute. When set to "Yes" on a product, that product cannot be returned. If ALL products in the order have this attribute set to "Yes", the Return Request button will appear disabled. Leave empty to disable this restriction.</comment>
+                </field>
+                <field id="restricted_billing_fields" translate="label comment" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Block RMA if Billing Field is Filled</label>
+                    <source_model>MageOS\RMA\Model\Config\Source\BillingAddressFields</source_model>
+                    <comment>If any of the selected billing address fields is filled, the RMA request will be blocked (e.g. VAT ID for B2B customers). Leave empty to disable this restriction.</comment>
+                    <can_be_empty>1</can_be_empty>
                 </field>
             </group>
             <group id="email" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -65,16 +65,33 @@ class ReturnLink extends Link
     {
         $order = $this->getCurrentOrder();
 
-        if (!$order || !$this->orderEligibility->isOrderEligible($order)) {
+        if (!$order) {
             return '';
         }
 
+        if ($this->orderEligibility->isOrderEligible($order)) {
+            return sprintf(
+                '<a href="%s" class="%s">%s</a>',
+                $this->escapeUrl($this->getHref()),
+                $this->getData('classes'),
+                $this->escapeHtml($this->getData('label') ?: __('Request Return'))
+            );
+        }
 
-        return sprintf(
-            '<a href="%s" class="%s">%s</a>',
-            $this->escapeUrl($this->getHref()),
-            $this->getData('classes'),
-            $this->escapeHtml($this->getData('label') ?: __('Request Return'))
-        );
+        // If the order is ineligible only because all products have RMA disabled,
+        // show the button in a disabled state instead of hiding it.
+        $storeId = (int)$order->getStoreId();
+        $disableAttr = $this->orderEligibility->getModuleConfig()->getProductDisableAttribute($storeId);
+
+        if ($disableAttr !== '' && $this->orderEligibility->areAllItemsRmaDisabled($order, $disableAttr)) {
+            return sprintf(
+                '<button type="button" class="%s" disabled title="%s">%s</button>',
+                $this->getData('classes'),
+                $this->escapeHtml(__('Return not available for the products in this order')),
+                $this->escapeHtml($this->getData('label') ?: __('Request Return'))
+            );
+        }
+
+        return '';
     }
 }

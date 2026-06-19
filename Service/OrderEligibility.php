@@ -71,6 +71,10 @@ class OrderEligibility
             return false;
         }
 
+        if (!$this->isBillingAllowed($order, $storeId)) {
+            return false;
+        }
+
         return !empty($this->getEligibleItems($order));
     }
 
@@ -134,6 +138,13 @@ class OrderEligibility
 
             if ($returnableAttributeCode !== ''
                 && !$this->isProductReturnable((int)$orderItem->getProductId(), $returnableAttributeCode)
+            ) {
+                continue;
+            }
+
+            $disableAttributeCode = $this->moduleConfig->getProductDisableAttribute($storeId);
+            if ($disableAttributeCode !== ''
+                && $this->isProductRmaDisabled((int)$orderItem->getProductId(), $disableAttributeCode)
             ) {
                 continue;
             }
@@ -254,6 +265,45 @@ class OrderEligibility
     }
 
     /**
+     * @return ModuleConfig
+     */
+    public function getModuleConfig(): ModuleConfig
+    {
+        return $this->moduleConfig;
+    }
+
+    /**
+     * Checks whether the billing address of the order has any of the configured
+     * restricted fields filled. Returns false (not allowed) if any such field is set.
+     *
+     * @param OrderInterface $order
+     * @param int $storeId
+     * @return bool
+     */
+    protected function isBillingAllowed(OrderInterface $order, int $storeId): bool
+    {
+        $restrictedFields = $this->moduleConfig->getRestrictedBillingFields($storeId);
+
+        if (empty($restrictedFields)) {
+            return true;
+        }
+
+        $billingAddress = $order->getBillingAddress();
+        if (!$billingAddress) {
+            return true;
+        }
+
+        foreach ($restrictedFields as $field) {
+            $value = $billingAddress->getData($field);
+            if ($value !== null && $value !== '' && $value !== false && $value !== 0 && $value !== '0') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Determines whether a product is eligible for return based on a configurable Yes/No attribute.
      *
      * The product is considered returnable when:
@@ -281,5 +331,63 @@ class OrderEligibility
             // Product not found: do not restrict
             return true;
         }
+    }
+
+    /**
+     * Determines whether a product has RMA explicitly disabled via a Yes/No attribute.
+     *
+     * Returns true (disabled) only when the attribute is explicitly set to a truthy value.
+     * If the product cannot be loaded or the attribute is not set, returns false (not disabled).
+     *
+     * @param int $productId
+     * @param string $attributeCode
+     * @return bool
+     */
+    private function isProductRmaDisabled(int $productId, string $attributeCode): bool
+    {
+        try {
+            $product = $this->productRepository->getById($productId);
+            $value = $product->getData($attributeCode);
+
+            if ($value === null || $value === '') {
+                return false;
+            }
+
+            return (bool)$value;
+        } catch (NoSuchEntityException) {
+            return false;
+        }
+    }
+
+    /**
+     * Determines whether all non-virtual, non-child items in the order
+     * have RMA explicitly disabled via the configured attribute.
+     * Returns false if no candidate items are found.
+     *
+     * @param OrderInterface $order
+     * @param string $attributeCode
+     * @return bool
+     */
+    public function areAllItemsRmaDisabled(OrderInterface $order, string $attributeCode): bool
+    {
+        $hasCandidate = false;
+
+        foreach ($order->getItems() as $orderItem) {
+            if ($orderItem->getParentItemId()) {
+                continue;
+            }
+
+            if (in_array($orderItem->getProductType(), ['virtual', 'downloadable'], true)) {
+                continue;
+            }
+
+            $hasCandidate = true;
+
+            if (!$this->isProductRmaDisabled((int)$orderItem->getProductId(), $attributeCode)) {
+                return false;
+            }
+        }
+
+        return $hasCandidate;
     }
 }
