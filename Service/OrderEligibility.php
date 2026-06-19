@@ -75,7 +75,14 @@ class OrderEligibility
             return false;
         }
 
-        return !empty($this->getEligibleItems($order));
+        $items = $this->getEligibleItems($order);
+
+        if (empty($items)) {
+            return false;
+        }
+
+        // Ineligible if every item is explicitly RMA-disabled
+        return !empty(array_filter($items, fn(array $i) => !($i['rma_disabled'] ?? false)));
     }
 
     /**
@@ -143,11 +150,8 @@ class OrderEligibility
             }
 
             $disableAttributeCode = $this->moduleConfig->getProductDisableAttribute($storeId);
-            if ($disableAttributeCode !== ''
-                && $this->isProductRmaDisabled((int)$orderItem->getProductId(), $disableAttributeCode)
-            ) {
-                continue;
-            }
+            $rmaDisabled = $disableAttributeCode !== ''
+                && $this->isProductRmaDisabled((int)$orderItem->getProductId(), $disableAttributeCode);
 
             $orderItemId = (int)$orderItem->getItemId();
             $qtyOrdered = (int)$orderItem->getQtyOrdered();
@@ -159,12 +163,13 @@ class OrderEligibility
             }
 
             $items[] = [
-                'order_item_id' => $orderItemId,
-                'name' => $orderItem->getName(),
-                'sku' => $orderItem->getSku(),
-                'qty_ordered' => $qtyOrdered,
+                'order_item_id'       => $orderItemId,
+                'name'                => $orderItem->getName(),
+                'sku'                 => $orderItem->getSku(),
+                'qty_ordered'         => $qtyOrdered,
                 'qty_already_requested' => $qtyAlreadyRequested,
-                'qty_available' => $qtyAvailable,
+                'qty_available'       => $qtyAvailable,
+                'rma_disabled'        => $rmaDisabled,
             ];
         }
 
@@ -265,14 +270,6 @@ class OrderEligibility
     }
 
     /**
-     * @return ModuleConfig
-     */
-    public function getModuleConfig(): ModuleConfig
-    {
-        return $this->moduleConfig;
-    }
-
-    /**
      * Checks whether the billing address of the order has any of the configured
      * restricted fields filled. Returns false (not allowed) if any such field is set.
      *
@@ -359,35 +356,4 @@ class OrderEligibility
         }
     }
 
-    /**
-     * Determines whether all non-virtual, non-child items in the order
-     * have RMA explicitly disabled via the configured attribute.
-     * Returns false if no candidate items are found.
-     *
-     * @param OrderInterface $order
-     * @param string $attributeCode
-     * @return bool
-     */
-    public function areAllItemsRmaDisabled(OrderInterface $order, string $attributeCode): bool
-    {
-        $hasCandidate = false;
-
-        foreach ($order->getItems() as $orderItem) {
-            if ($orderItem->getParentItemId()) {
-                continue;
-            }
-
-            if (in_array($orderItem->getProductType(), ['virtual', 'downloadable'], true)) {
-                continue;
-            }
-
-            $hasCandidate = true;
-
-            if (!$this->isProductRmaDisabled((int)$orderItem->getProductId(), $attributeCode)) {
-                return false;
-            }
-        }
-
-        return $hasCandidate;
-    }
 }
